@@ -32,31 +32,63 @@ export default {
 
       <v-main>
         <v-container>
-          <v-row>
+          <v-row class="dflex justify-center">
             <v-col>
               <v-card
-                class="mx-auto"
-                prepend-icon="$vuetify"
-                subtitle="The #1 Vue UI Library"
-                width=""
+                class="mx-auto px-6 py-8"
+                max-width="450"
+                prepend-icon="mdi-book-education"
+                subtitle="Login Form"
+                style="margin: 50px; border-radius: 10%"
               >
                 <template v-slot:title>
-                  <span class="font-weight-black">Welcome to Me</span>
+                  <span class="font-weight-black">PeerTutor</span>
                 </template>
 
-                <v-card-text class="bg-surface-light pt-4">
-                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Commodi, ratione debitis
-                  quis est labore voluptatibus! Eaque cupiditate minima, at placeat totam, magni
-                  doloremque veniam neque porro libero rerum unde voluptatem! Lorem ipsum dolor sit
-                  amet consectetur adipisicing elit. Nihil deleniti harum corrupti quas, vitae illum
-                  quam aut esse unde, facilis nobis repellendus nostrum at sunt laudantium odio
-                  eveniet. Ratione, nostrum.
-                </v-card-text>
+                <v-form fast-fail @submit.prevent>
+                  <v-text-field
+                    class="mx-3 my-2"
+                    variant="outlined"
+                    prepend-icon="mdi-account"
+                    v-model="email"
+                    :rules="emailRules"
+                    placeholder="user@gmail.com"
+                    label="Email"
+                    type="email"
+                    hide-details="auto"
+                    clearable
+                  ></v-text-field>
+
+                  <v-text-field
+                    class="mx-3 my-2"
+                    variant="outlined"
+                    prepend-icon="mdi-lock"
+                    v-model="password"
+                    :rules="passwordRules"
+                    label="Password"
+                    type="password"
+                    hint="Always remember your password!"
+                    placeholder="Enter your password"
+                    clearable
+                  ></v-text-field>
+
+                  <v-btn
+                    :disabled="!form"
+                    :loading="loading"
+                    color="transparent"
+                    size="large"
+                    type="submit"
+                    variant="elevated"
+                    block
+                  >
+                    Sign In
+                  </v-btn>
+                </v-form>
               </v-card></v-col
             >
           </v-row>
-          <v-row>
-            <v-col
+          <v-row class="dflex justify-center">
+            <v-col class="mx-auto"
               ><v-card
                 append-icon="mdi-open-in-new"
                 class="mx-auto"
@@ -67,13 +99,13 @@ export default {
                 subtitle="Jun Kyle"
                 target="_blank"
                 title="Github"
-              ></v-card
-            ></v-col>
+              ></v-card>
+            </v-col>
           </v-row>
         </v-container>
       </v-main>
 
-      <v-footer class="bg-grey-lighten-1">
+      <v-footer color="grey-darken-3" border app class="dflex">
         <v-row justify="center" no-gutters>
           <v-btn
             v-for="link in links"
