@@ -1,11 +1,17 @@
-<script setup></script>
+<script setup>
 
-<script></script>
+
+</script>
+
+<script>
+
+
+</script>
 
 <template>
   <v-responsive class="border rounded">
     <v-app :theme="theme">
-      <v-app-bar
+        <v-app-bar
         color="teal-darken-4"
         image="https://picsum.photos/1920/1080?random"
       >
@@ -43,7 +49,7 @@
               <v-card
                 class="mx-auto px-6 py-8"
                 max-width="450"
-                subtitle="Login Form"
+                subtitle="Register Form"
                 style="margin: 30px; border-radius: 10%"
                 elevatio="8"
               >
@@ -54,6 +60,20 @@
                 </template>
 
                 <v-form fast-fail @submit.prevent>
+                  <v-text-field
+                    class="mx-3 my-2"
+                    variant="outlined"
+                    prepend-inner-icon="mdi-clipboard-account"
+                    density="compact"
+                    v-model="userName"
+                    :rules="userNameRules"
+                    placeholder="user2"
+                    label="User Name"
+                    type="userName"
+                    hide-details="auto"
+                    clearable
+                  ></v-text-field>
+
                   <v-text-field
                     class="mx-3 my-2"
                     variant="outlined"
@@ -84,6 +104,14 @@
                     placeholder="Enter your password"
                   ></v-text-field>
 
+                  <v-select
+                    v-model="select"
+                    :items="items"
+                    :rules="[(v) => !!v || 'Item is required']"
+                    label="Role"
+                    required
+                  ></v-select>
+
                   <v-container width="200">
                     <v-btn
                       class="my-2"
@@ -94,14 +122,13 @@
                       variant="elevated"
                       block
                     >
-                      Sign In
+                      Register
                     </v-btn></v-container
                   >
                 </v-form>
                 <v-divider class="my-2"></v-divider>
                 <h5 class="mx-auto">
-                  Don't have an account?
-                  <RouterLink to="/register">Click here to Register</RouterLink>
+                  <RouterLink to="/Login">Back</RouterLink>
                 </h5>
               </v-card></v-col
             >
