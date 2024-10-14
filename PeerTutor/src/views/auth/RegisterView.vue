@@ -17,7 +17,7 @@ import RegisterForm from './RegisterForm.vue'
             color="#294D61"
           >
             <template v-slot:title>
-              <span class="font-weight-black" style="color: #80cbc4">Create an account</span>
+              <span class="font-weight-black text-teal-lighten-3" >Create an account</span>
               <v-divider class="my-2"></v-divider>
             </template>
 
@@ -26,7 +26,7 @@ import RegisterForm from './RegisterForm.vue'
             <v-card-text class="text-center">
               <a class="text-white text-decoration-none" rel="noopener noreferrer" target="_blank">
                 Already have an account?<v-icon icon="mdi-chevron-left"></v-icon>
-                <RouterLink to="/login">Sign In</RouterLink>
+                <RouterLink class="text-teal-lighten-3" to="/login">Sign In</RouterLink>
               </a>
             </v-card-text>
           </v-card></v-col
