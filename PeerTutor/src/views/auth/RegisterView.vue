@@ -32,7 +32,7 @@ import RegisterForm from './RegisterForm.vue'
                   target="_blank"
                 >
                   Already have an account?<v-icon icon="mdi-chevron-left"></v-icon>
-                  <RouterLink class="text-teal-lighten-3" to="/login">Sign In</RouterLink>
+                  <RouterLink class="text-teal-lighten-3" to="./">Sign In</RouterLink>
                 </a>
               </v-card-text>
             </v-card></v-col
