@@ -47,16 +47,14 @@ const submit = handleSubmit((values) => {
           <v-card
             class="mx-auto px-6"
             max-width="450"
-            subtitle="Register Form"
+            subtitle="PeerTutor"
             style="margin: 30px; border-radius: 30px"
             elevation="20"
             color="#294D61"
           >
             <template v-slot:title>
-              <v-img class="mx-auto" max-width="228" src="/logo/try2.png"></v-img>
-
-              <span class="font-weight-black" style="color: #80cbc4">PeerTutor</span>
-              <v-divider class="my-2" color="black"></v-divider>
+              <span class="font-weight-black" style="color: #80cbc4">Create an account</span>
+              <v-divider class="my-2"></v-divider>
             </template>
 
             <v-form @submit.prevent="submit" fast-fail>
@@ -114,7 +112,7 @@ const submit = handleSubmit((values) => {
               ></v-text-field>
 
               <v-select
-                class="mx-3 my-2"
+                class="mx-3"
                 :error-messages="role.errorMessage"
                 :items="items"
                 label="Role"
@@ -135,7 +133,7 @@ const submit = handleSubmit((values) => {
                 </v-btn>
               </v-container>
             </v-form>
-            <v-divider class=""></v-divider>
+            <v-divider class="mx-3"></v-divider>
             <v-card-text class="text-center">
               <a class="text-white text-decoration-none" rel="noopener noreferrer" target="_blank">
                 Already have an account?<v-icon icon="mdi-chevron-left"></v-icon>

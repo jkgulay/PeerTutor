@@ -1,8 +1,26 @@
 <script setup>
 import AppLayout from '@/components/layout/AppLayout.vue'
-</script>
+import { ref } from 'vue'
+import { useField, useForm } from 'vee-validate'
+const { check } = useForm({
+  validationSchema: {
 
-<script></script>
+    password(value) {
+      return /^[0-9-]{7,}$/.test(value) || 'Password needs to be at least 7 digits.'
+    },
+    email(value) {
+      return /^[a-z.-]+@[a-z.-]+\.[a-z]+$/i.test(value) || 'Must be a valid e-mail.'
+    },
+  }
+})
+
+// Form fields
+const visible = ref(false)
+
+const password = useField('password')
+const email = useField('email')
+const loading = ref(false)
+</script>
 
 <template>
   <AppLayout>
@@ -12,7 +30,7 @@ import AppLayout from '@/components/layout/AppLayout.vue'
           <v-card
             class="mx-auto px-6"
             max-width="450"
-            subtitle="Login Form"
+            subtitle="PeerTutor"
             style="margin: 30px; border-radius: 30px"
             elevation="20"
             color="#294D61"
@@ -20,8 +38,7 @@ import AppLayout from '@/components/layout/AppLayout.vue'
             <template v-slot:title>
               <v-img class="mx-auto" max-width="228" src="/logo/try2.png"></v-img>
 
-              <span class="font-weight-black" style="color: #80cbc4">PeerTutor</span>
-              <v-divider class="my-2" color="black"></v-divider>
+              <span class="font-weight-black" style="color: #80cbc4">Welcome!</span>
             </template>
 
             <v-form fast-fail @submit.prevent>
@@ -30,29 +47,26 @@ import AppLayout from '@/components/layout/AppLayout.vue'
                 variant="outlined"
                 prepend-inner-icon="mdi-account"
                 density="compact"
-                v-model="email"
-                :rules="emailRules"
+                :error-messages="email.errorMessage"
                 placeholder="user@gmail.com"
                 label="Email"
-                type="email"
                 hide-details="auto"
                 clearable
               ></v-text-field>
 
               <v-text-field
-                class="mx-3"
+                class="mx-3 my-2"
                 density="compact"
                 variant="outlined"
                 prepend-inner-icon="mdi-lock"
                 :append-inner-icon="visible ? 'mdi-eye-off' : 'mdi-eye'"
                 :type="visible ? 'text' : 'password'"
                 @click:append-inner="visible = !visible"
-                v-model="password"
-                :rules="passwordRules"
+                :error-messages="password.errorMessage"
                 label="Password"
-                type="password"
-                hint="Always remember your password!"
                 placeholder="Enter your password"
+                hide-details="auto"
+                clearable
               ></v-text-field>
 
               <v-container width="200">
@@ -71,7 +85,7 @@ import AppLayout from '@/components/layout/AppLayout.vue'
                 </v-btn></v-container
               >
             </v-form>
-            <v-divider class=""></v-divider>
+            <v-divider class="mx-3"></v-divider>
             <v-card-text class="text-center">
               <a class="text-white text-decoration-none" rel="noopener noreferrer" target="_blank">
                 Don't have an account? <RouterLink to="/register">Sign up now</RouterLink
