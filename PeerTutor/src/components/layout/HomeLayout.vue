@@ -1,10 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 
-// Ref to toggle the drawer state
 const drawer = ref(false)
-
-// Function to toggle the drawer
 const toggleDrawer = () => {
   drawer.value = !drawer.value
 }
@@ -49,13 +46,21 @@ const toggleDrawer = () => {
 
       <!-- Main Content Layout -->
       <v-layout row class="">
-        <v-navigation-drawer v-model="drawer" app permanent expand-on-hover rail>
+        <v-navigation-drawer
+          v-model="drawer"
+          app
+          permanent
+          expand-on-hover
+          rail
+          class="py-14"        
+         
+        >
           <v-list>
             <!-- User Avatar and Info -->
             <v-list-item
-              prepend-avatar="https://randomuser.me/api/portraits/women/85.jpg"
-              subtitle="sandra_a88@gmail.com"
-              title="Sandra Adams"
+              prepend-avatar="https://randomuser.me/api/portraits/men/91.jpg"
+              subtitle="user123@gmail.com"
+              title="User Name"
             ></v-list-item>
           </v-list>
 
@@ -63,28 +68,15 @@ const toggleDrawer = () => {
 
           <!-- Navigation List -->
           <v-list density="compact" nav>
-            <v-list-item prepend-icon="mdi-folder" title="My Files"></v-list-item>
-            <v-list-item prepend-icon="mdi-account-multiple" title="Shared with me"></v-list-item>
-            <v-list-item prepend-icon="mdi-star" title="Starred"></v-list-item>
+            <v-list-item prepend-icon="mdi-account-box" title="My Profile"></v-list-item>
+            <v-list-item prepend-icon="mdi-logout" title="Logout"></v-list-item>
           </v-list>
         </v-navigation-drawer>
 
         <!-- Content and Card Section -->
         <v-main>
           <v-container>
-            <!-- Slot for additional content -->
             <slot name="content"></slot>
-
-            <!-- Card Section -->
-            <v-card class="mx-auto" max-width="600" style="margin-top: 100px">
-              <v-card-title class="white--text">Welcome to PeerTutor</v-card-title>
-              <v-card-subtitle class="white--text">
-                Your learning journey starts here
-              </v-card-subtitle>
-              <v-card-text class="white--text">
-                Explore our features and connect with your tutor today.
-              </v-card-text>
-            </v-card>
           </v-container>
         </v-main>
       </v-layout>

@@ -7,7 +7,7 @@ import RegisterForm from './RegisterForm.vue'
   <AppLayout
     ><template #content
       ><
-      <v-container fluid="">
+      <v-container fluid>
         ><v-row class="dflex justify-center">
           <v-col>
             <v-card
