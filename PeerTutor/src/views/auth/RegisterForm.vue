@@ -43,7 +43,7 @@ const submit = handleSubmit((values) => {
     <v-text-field
       class="mx-3 my-2"
       variant="outlined"
-      prepend-inner-icon="mdi-account"
+      prepend-inner-icon="mdi-email"
       density="compact"
       :error-messages="email.errorMessage"
       placeholder="user@gmail.com"
@@ -55,7 +55,7 @@ const submit = handleSubmit((values) => {
     <v-text-field
       class="mx-3 my-2"
       variant="outlined"
-      prepend-inner-icon="mdi-badge-account-outline"
+      prepend-inner-icon="mdi-account"
       density="compact"
       :error-messages="userName.errorMessage"
       placeholder="Enter Name"
@@ -64,35 +64,35 @@ const submit = handleSubmit((values) => {
       clearable
     ></v-text-field>
 
-    <v-text-field
-      class="mx-3 my-2"
-      density="compact"
-      variant="outlined"
-      prepend-inner-icon="mdi-lock"
-      :append-inner-icon="visible ? 'mdi-eye-off' : 'mdi-eye'"
-      :type="visible ? 'text' : 'password'"
-      @click:append-inner="visible = !visible"
-      :error-messages="password.errorMessage"
-      label="Password"
-      placeholder="Enter your password"
-      hide-details="auto"
-      clearable
-    ></v-text-field>
+    
+      <v-text-field
+        class="mx-3 my-2"
+        density="compact"
+        variant="outlined"
+        prepend-inner-icon="mdi-lock"
+        :append-inner-icon="visible ? 'mdi-eye-off' : 'mdi-eye'"
+        :type="visible ? 'text' : 'password'"
+        @click:append-inner="visible = !visible"
+        :error-messages="password.errorMessage"
+        label="Password"
+        placeholder="Enter your password"
+        hide-details="auto"
+        clearable
+      ></v-text-field>
 
-    <v-text-field
-      class="mx-3 my-2"
-      density="compact"
-      variant="outlined"
-      prepend-inner-icon="mdi-lock-check"
-      :append-inner-icon="repeatVisible ? 'mdi-eye-off' : 'mdi-eye'"
-      :type="repeatVisible ? 'text' : 'password'"
-      @click:append-inner="repeatVisible = !repeatVisible"
-      label="Repeat Password"
-      placeholder="Repeat your password"
-      hide-details="auto"
-      clearable
-    ></v-text-field>
-
+      <v-text-field
+        class="mx-3 my-2"
+        density="compact"
+        variant="outlined"
+        prepend-inner-icon="mdi-lock-check"
+        :append-inner-icon="repeatVisible ? 'mdi-eye-off' : 'mdi-eye'"
+        :type="repeatVisible ? 'text' : 'password'"
+        @click:append-inner="repeatVisible = !repeatVisible"
+        label="Repeat Password"
+        placeholder="Repeat your password"
+        hide-details="auto"
+        clearable
+      ></v-text-field>
     <v-select
       class="mx-3"
       :error-messages="role.errorMessage"

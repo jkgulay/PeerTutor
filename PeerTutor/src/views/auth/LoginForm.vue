@@ -25,7 +25,7 @@ const loading = ref(false)
     <v-text-field
       class="mx-3 my-2"
       variant="outlined"
-      prepend-inner-icon="mdi-account"
+      prepend-inner-icon="mdi-email"
       density="compact"
       :error-messages="email.errorMessage"
       placeholder="user@gmail.com"

@@ -6,6 +6,7 @@ import LoginForm from './LoginForm.vue'
 <template>
   <AppLayout>
     <template #content>
+      <v-container fluid>
       <v-row class="dflex justify-center">
         <v-col>
           <v-card
@@ -33,6 +34,7 @@ import LoginForm from './LoginForm.vue'
             </v-card-text> </v-card
         ></v-col>
       </v-row>
+    </v-container>
     </template>
   </AppLayout>
 </template>
