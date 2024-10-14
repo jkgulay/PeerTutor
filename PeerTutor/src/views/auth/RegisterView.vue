@@ -17,7 +17,7 @@ import RegisterForm from './RegisterForm.vue'
             color="#294D61"
           >
             <template v-slot:title>
-              <span class="font-weight-black text-teal-lighten-3" >Create an account</span>
+              <span class="font-weight-black text-teal-lighten-3">Create an account</span>
               <v-divider class="my-2"></v-divider>
             </template>
 

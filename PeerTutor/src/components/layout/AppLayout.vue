@@ -13,7 +13,7 @@
         app
         color="primary"
       >
-        <v-app-bar-nav-icon></v-app-bar-nav-icon>
+        
         <v-col class="d-flex align-center"
           ><v-img src="/logo/try2.png" max-width="50"></v-img
           ><v-app-bar-title
