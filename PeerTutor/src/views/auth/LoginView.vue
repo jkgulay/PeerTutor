@@ -3,54 +3,44 @@
 <script></script>
 
 <template>
-  <v-responsive class="border rounded">
+  <v-responsive>
     <v-app :theme="theme">
       <v-app-bar
-        color="teal-darken-4"
-        image="https://picsum.photos/1920/1080?random"
+        style="background: linear-gradient(#05161a, #072e33)"
+        elevation="8"
+        app
+        color="primary"
       >
-        <template v-slot:image>
-          <v-img
-            gradient="to top right, rgba(19,84,122,.8), rgba(128,208,199,.8)"
-          ></v-img>
-        </template>
-
-        <template v-slot:prepend>
-          <v-app-bar-nav-icon></v-app-bar-nav-icon>
-        </template>
-
-        <v-app-bar-title>PeerTutor</v-app-bar-title>
+        <v-app-bar-nav-icon></v-app-bar-nav-icon>
+        <v-col class="d-flex align-center"
+          ><v-img src="/logo/try2.png" max-width="50"></v-img
+          ><v-app-bar-title><span class="font-weight-bold" style="color: #80CBC4;">PeerTutor</span></v-app-bar-title></v-col
+        >
 
         <v-spacer></v-spacer>
-
-        <v-btn icon>
-          <v-icon>mdi-magnify</v-icon>
-        </v-btn>
-
-        <v-btn icon>
-          <v-icon>mdi-heart</v-icon>
-        </v-btn>
 
         <v-btn icon>
           <v-icon>mdi-dots-vertical</v-icon>
         </v-btn>
       </v-app-bar>
 
-      <v-main>
+      <v-main style="background-color: #05161a">
         <v-container>
           <v-row class="dflex justify-center">
             <v-col>
               <v-card
-                class="mx-auto px-6 py-8"
+                class="mx-auto px-6"
                 max-width="450"
                 subtitle="Login Form"
                 style="margin: 30px; border-radius: 10%"
-                elevatio="8"
+                elevation="20"
+                color="#294D61"
               >
                 <template v-slot:title>
-                  <v-img class="mx-auto" max-width="228" src="/logo/try.png"></v-img>
+                  <v-img class="mx-auto" max-width="228" src="/logo/try2.png"></v-img>
+
+                  <span class="font-weight-black" style="color: #80CBC4;">PeerTutor</span>
                   <v-divider class="my-2" color="black"></v-divider>
-                  <span class="font-weight-black">PeerTutor</span>
                 </template>
 
                 <v-form fast-fail @submit.prevent>
@@ -69,7 +59,7 @@
                   ></v-text-field>
 
                   <v-text-field
-                    class="mx-3 my-2"
+                    class="mx-3"
                     density="compact"
                     variant="outlined"
                     prepend-inner-icon="mdi-lock"
@@ -86,32 +76,38 @@
 
                   <v-container width="200">
                     <v-btn
-                      class="my-2"
+                      class=""
                       :loading="loading"
-                      color="light-green-darken-1"
+                      color="teal-darken-2"
                       size="large"
                       type="submit"
                       variant="elevated"
                       block
+                      elevation="10"
                     >
-                      Sign In
+                      <span style="color: #80CBC4;">Sign In</span>
                     </v-btn></v-container
                   >
                 </v-form>
-                <v-divider class="my-2"></v-divider>
-                <h5 class="mx-auto">
-                  Don't have an account?
-                  <RouterLink to="/register">Click here to Register</RouterLink>
-                </h5>
-              </v-card></v-col
-            >
+                <v-divider class=""></v-divider>
+                <v-card-text class="text-center">
+                  <a
+                    class="text-white text-decoration-none"
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >
+                    Don't have an account? <RouterLink to="/register">Sign up now</RouterLink
+                    ><v-icon icon="mdi-chevron-right"></v-icon>
+                  </a>
+                </v-card-text> </v-card
+            ></v-col>
           </v-row>
         </v-container>
       </v-main>
 
-      <v-footer color="grey-darken-3" border app class="dflex">
+      <v-footer style="background: linear-gradient(#072e33,#05161a)" border app class="dflex">
         <v-row justify="center" no-gutters>
-          <v-col class="text-center mt-4" cols="12">
+          <v-col class="text-center mt-4" cols="12" style="color: #26A69A;">
             {{ new Date().getFullYear() }} — <strong>Kayel</strong>
           </v-col>
         </v-row>

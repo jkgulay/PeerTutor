@@ -128,7 +128,7 @@
                 </v-form>
                 <v-divider class="my-2"></v-divider>
                 <h5 class="mx-auto">
-                  <RouterLink to="/Login">Back</RouterLink>
+                  <RouterLink to="/login">Back</RouterLink>
                 </h5>
               </v-card></v-col
             >
