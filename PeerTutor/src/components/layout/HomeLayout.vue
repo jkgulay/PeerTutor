@@ -76,7 +76,7 @@ const toggleDrawer = () => {
             <slot name="content"></slot>
 
             <!-- Card Section -->
-            <v-card class="mx-auto" max-width="600" style="background-color:; margin-top: 100px">
+            <v-card class="mx-auto" max-width="600" style="margin-top: 100px">
               <v-card-title class="white--text">Welcome to PeerTutor</v-card-title>
               <v-card-subtitle class="white--text">
                 Your learning journey starts here
