@@ -52,8 +52,8 @@ const toggleDrawer = () => {
           permanent
           expand-on-hover
           rail
-          class="py-14"        
-         
+          class="py-14 text-white"        
+          style="background-color:#05161a"
         >
           <v-list>
             <!-- User Avatar and Info -->
