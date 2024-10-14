@@ -60,7 +60,7 @@ const loading = ref(false)
         block
         elevation="10"
         style="border-radius: 30px"
-        href="/home"
+        href="./home"
       >
         <span style="color: #80cbc4">Sign In</span>
       </v-btn></v-container
