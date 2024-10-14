@@ -19,7 +19,7 @@ import LoginForm from './LoginForm.vue'
             <template v-slot:title>
               <v-img class="mx-auto" max-width="228" src="/logo/try2.png"></v-img>
 
-              <span class="font-weight-black" style="color: #80cbc4">Welcome!</span>
+              <span class="font-weight-black text-teal-lighten-3">Welcome!</span>
             </template>
 
             <LoginForm></LoginForm>
@@ -27,7 +27,7 @@ import LoginForm from './LoginForm.vue'
             <v-divider class="mx-3"></v-divider>
             <v-card-text class="text-center">
               <a class="text-white text-decoration-none" rel="noopener noreferrer" target="_blank">
-                Don't have an account? <RouterLink to="/register">Sign up now</RouterLink
+                Don't have an account? <RouterLink class="text-teal-lighten-3" to="/register">Sign up now</RouterLink
                 ><v-icon icon="mdi-chevron-right"></v-icon>
               </a>
             </v-card-text> </v-card
