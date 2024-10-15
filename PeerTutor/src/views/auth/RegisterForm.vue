@@ -4,7 +4,10 @@ import { useField, useForm } from 'vee-validate'
 
 const { handleSubmit } = useForm({
   validationSchema: {
-    userName(value) {
+    firstName(value) {
+      return value?.length >= 2 || 'First Name needs to be at least 2 characters.'
+    },
+    lastName(value) {
       return value?.length >= 2 || 'User Name needs to be at least 2 characters.'
     },
     password(value) {
@@ -23,7 +26,8 @@ const { handleSubmit } = useForm({
 const visible = ref(false)
 const repeatVisible = ref(false)
 
-const userName = useField('userName')
+const firstName = useField('firstName')
+const lastName = useField('lastName')
 const password = useField('password')
 const email = useField('email')
 const role = useField('role')
@@ -39,79 +43,98 @@ const submit = handleSubmit((values) => {
 
 <template>
   <v-form @submit.prevent="submit" fast-fail>
-    <v-text-field
-      class="mx-3 my-2"
-      variant="outlined"
-      prepend-inner-icon="mdi-account"
-      density="compact"
-      :error-messages="email.errorMessage"
-      placeholder="user@gmail.com"
-      label="Email"
-      hide-details="auto"
-      clearable
-    ></v-text-field>
+    <v-row class="d-flex mx-auto" align="center">
+      <v-col cols="10" md="6">
+        <v-text-field
+          variant="outlined"
+          prepend-inner-icon="mdi-badge-account-outline"
+          density="compact"
+          :error-messages="firstName.errorMessage"
+          placeholder="First Name"
+          label="First Name"
+          hide-details="auto"
+          clearable
+        ></v-text-field>
+      </v-col>
+      <v-col cols="10" md="6">
+        <v-text-field
+          variant="outlined"
+          density="compact"
+          :error-messages="lastName.errorMessage"
+          placeholder="Last Name"
+          label="Last Name"
+          hide-details="auto"
+          clearable
+        ></v-text-field>
+      </v-col>
+    </v-row>
 
-    <v-text-field
-      class="mx-3 my-2"
-      variant="outlined"
-      prepend-inner-icon="mdi-badge-account-outline"
-      density="compact"
-      :error-messages="userName.errorMessage"
-      placeholder="Enter Name"
-      label="User Name"
-      hide-details="auto"
-      clearable
-    ></v-text-field>
+    <!-- Email Field -->
+    <v-row class="mx-3 mb-2" align="center">
+      <v-text-field
+        variant="outlined"
+        prepend-inner-icon="mdi-email"
+        density="compact"
+        :error-messages="email.errorMessage"
+        placeholder="user@gmail.com"
+        label="Email"
+        hide-details="auto"
+        clearable
+      ></v-text-field>
+    </v-row>
 
-    <v-text-field
-      class="mx-3 my-2"
-      density="compact"
-      variant="outlined"
-      prepend-inner-icon="mdi-lock"
-      :append-inner-icon="visible ? 'mdi-eye-off' : 'mdi-eye'"
-      :type="visible ? 'text' : 'password'"
-      @click:append-inner="visible = !visible"
-      :error-messages="password.errorMessage"
-      label="Password"
-      placeholder="Enter your password"
-      hide-details="auto"
-      clearable
-    ></v-text-field>
+    <!-- Password Fields -->
+    <v-row class="mx-3 mb-2" align="center">
+      <v-text-field
+        density="compact"
+        variant="outlined"
+        prepend-inner-icon="mdi-lock"
+        :append-inner-icon="visible ? 'mdi-eye-off' : 'mdi-eye'"
+        :type="visible ? 'text' : 'password'"
+        @click:append-inner="visible = !visible"
+        :error-messages="password.errorMessage"
+        label="Password"
+        placeholder="Enter your password"
+        hide-details="auto"
+        clearable
+      ></v-text-field>
+    </v-row>
+    <v-row class="mx-3 mb-2" align="center">
+      <v-text-field
+        density="compact"
+        variant="outlined"
+        prepend-inner-icon="mdi-lock-check"
+        :append-inner-icon="repeatVisible ? 'mdi-eye-off' : 'mdi-eye'"
+        :type="repeatVisible ? 'text' : 'password'"
+        @click:append-inner="repeatVisible = !repeatVisible"
+        label="Repeat Password"
+        placeholder="Repeat your password"
+        hide-details="auto"
+        clearable
+      ></v-text-field>
+    </v-row>
 
-    <v-text-field
-      class="mx-3 my-2"
-      density="compact"
-      variant="outlined"
-      prepend-inner-icon="mdi-lock-check"
-      :append-inner-icon="repeatVisible ? 'mdi-eye-off' : 'mdi-eye'"
-      :type="repeatVisible ? 'text' : 'password'"
-      @click:append-inner="repeatVisible = !repeatVisible"
-      label="Repeat Password"
-      placeholder="Repeat your password"
-      hide-details="auto"
-      clearable
-    ></v-text-field>
+    <!-- Role Select -->
+    <v-row class="mx-3" align="center">
+      <v-select :error-messages="role.errorMessage" :items="items" label="Role" ></v-select>
+    </v-row>
 
-    <v-select
-      class="mx-3"
-      :error-messages="role.errorMessage"
-      :items="items"
-      label="Role"
-    ></v-select>
-
-    <v-container width="200">
-      <v-btn
-        :loading="loading"
-        color="teal-darken-2"
-        size="large"
-        type="submit"
-        variant="elevated"
-        block
-        elevation="10"
-        style="border-radius: 30px"
-      >
-        <span style="color: #80cbc4">Create</span>
-      </v-btn>
-    </v-container>
+    <!-- Submit Button -->
+    <v-row align="center">
+      <v-container width="200">
+        <v-btn
+          :loading="loading"
+          color="teal-darken-2"
+          size="large"
+          type="submit"
+          variant="elevated"
+          block
+          elevation="10"
+          style="border-radius: 30px"
+        >
+          <span style="color: #80cbc4">Create</span>
+        </v-btn>
+      </v-container>
+    </v-row>
   </v-form>
 </template>
