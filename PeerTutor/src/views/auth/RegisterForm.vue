@@ -30,7 +30,6 @@ const role = useField('role')
 
 const items = ref(['Student', 'Tutor'])
 const loading = ref(false)
-const repeatPassword = ref('')
 
 // Form submission
 const submit = handleSubmit((values) => {
