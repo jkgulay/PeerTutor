@@ -14,7 +14,7 @@ const location = ref('Butuan City, Philippines')
       <v-container class="profile-container d-flex justify-center pa-0">
         <v-card max-width="900" class="profile-card">
           <!-- Profile Header with background image and profile info -->
-          <v-img src="/public/cover.jpg" class="background-img" height="250px" cover></v-img>
+          <v-img src="/cover.jpg" class="background-img" height="250px" cover></v-img>
 
           <v-container class="profile-header">
             <v-avatar class="profile-img" size="140">
