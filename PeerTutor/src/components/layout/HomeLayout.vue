@@ -70,19 +70,12 @@ const toggleDrawer = () => {
 
           <!-- Navigation List -->
           <v-list density="compact" nav>
-<<<<<<< HEAD
-            <v-list-item prepend-icon="mdi-account-box" ><RouterLink class="text-white" to="">Profile</RouterLink
-              ></v-list-item>
-            <v-list-item prepend-icon="mdi-logout" ><RouterLink class="text-white" to="./">Logout</RouterLink
-              ></v-list-item>
-=======
             <v-list-item prepend-icon="mdi-account-box"
               ><RouterLink class="text-white" to="/profile">Profile</RouterLink></v-list-item
             >
             <v-list-item prepend-icon="mdi-logout"
               ><RouterLink class="text-white" to="./">Logout</RouterLink></v-list-item
             >
->>>>>>> 99fd52159b08dd7828c1ff4d636592d8056f1316
           </v-list>
         </v-navigation-drawer>
 

@@ -44,7 +44,7 @@ const submit = handleSubmit((values) => {
 <template>
   <v-form @submit.prevent="submit" fast-fail>
     <v-row class="d-flex mx-auto" align="center">
-      <v-col cols="10" md="6">
+      <v-col cols="12" md="6">
         <v-text-field
           variant="outlined"
           prepend-inner-icon="mdi-badge-account-outline"
@@ -56,7 +56,7 @@ const submit = handleSubmit((values) => {
           clearable
         ></v-text-field>
       </v-col>
-      <v-col cols="10" md="6">
+      <v-col cols="12" md="6">
         <v-text-field
           variant="outlined"
           density="compact"
@@ -115,13 +115,13 @@ const submit = handleSubmit((values) => {
     </v-row>
 
     <!-- Role Select -->
-    <v-row class="mx-3" align="center">
+    <v-row class="mx-3 "  style="height: 50px;">
       <v-select :error-messages="role.errorMessage" :items="items" label="Role" ></v-select>
     </v-row>
 
     <!-- Submit Button -->
     <v-row align="center">
-      <v-container width="200">
+      <v-container width="200" class="mb-2">
         <v-btn
           :loading="loading"
           color="teal-darken-2"
