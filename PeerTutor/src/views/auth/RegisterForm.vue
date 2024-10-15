@@ -8,7 +8,7 @@ const { handleSubmit } = useForm({
       return value?.length >= 2 || 'First Name needs to be at least 2 characters.'
     },
     lastName(value) {
-      return value?.length >= 2 || 'User Name needs to be at least 2 characters.'
+      return value?.length >= 2 || 'Last Name needs to be at least 2 characters.'
     },
     password(value) {
       return /^[0-9-]{7,}$/.test(value) || 'Password needs to be at least 7 digits.'
@@ -26,6 +26,8 @@ const { handleSubmit } = useForm({
 const visible = ref(false)
 const repeatVisible = ref(false)
 
+const firstName = useField('firstName')
+const lastName = useField('lastName')
 const firstName = useField('firstName')
 const lastName = useField('lastName')
 const password = useField('password')
