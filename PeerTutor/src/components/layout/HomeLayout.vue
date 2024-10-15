@@ -38,7 +38,7 @@ const toggleDrawer = () => {
             :loading="loading"
             append-inner-icon="mdi-magnify"
             density="compact"
-            label="Search templates"
+            label="Search Tutor"
             variant="solo"
             hide-details
             single-line
