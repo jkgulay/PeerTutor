@@ -24,7 +24,9 @@ const toggleDrawer = () => {
         <v-col class="d-flex align-center">
           <v-img src="/logo/try2.png" max-width="50"></v-img>
           <v-app-bar-title>
-            <span class="font-weight-bold" style="color: #80cbc4"> PeerTutor </span>
+            <RouterLink to="/home" style="text-decoration: none">
+              <span class="font-weight-bold" style="color: #80cbc4"> PeerTutor </span>
+            </RouterLink>
           </v-app-bar-title>
         </v-col>
 
@@ -52,8 +54,8 @@ const toggleDrawer = () => {
           permanent
           expand-on-hover
           rail
-          class="py-14 text-white"        
-          style="background-color:#05161a"
+          class="py-14 text-white"
+          style="background-color: #05161a"
         >
           <v-list>
             <!-- User Avatar and Info -->
@@ -68,10 +70,19 @@ const toggleDrawer = () => {
 
           <!-- Navigation List -->
           <v-list density="compact" nav>
+<<<<<<< HEAD
             <v-list-item prepend-icon="mdi-account-box" ><RouterLink class="text-white" to="">Profile</RouterLink
               ></v-list-item>
             <v-list-item prepend-icon="mdi-logout" ><RouterLink class="text-white" to="./">Logout</RouterLink
               ></v-list-item>
+=======
+            <v-list-item prepend-icon="mdi-account-box"
+              ><RouterLink class="text-white" to="/profile">Profile</RouterLink></v-list-item
+            >
+            <v-list-item prepend-icon="mdi-logout"
+              ><RouterLink class="text-white" to="./">Logout</RouterLink></v-list-item
+            >
+>>>>>>> 99fd52159b08dd7828c1ff4d636592d8056f1316
           </v-list>
         </v-navigation-drawer>
 
