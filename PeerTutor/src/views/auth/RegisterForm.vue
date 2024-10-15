@@ -28,8 +28,6 @@ const repeatVisible = ref(false)
 
 const firstName = useField('firstName')
 const lastName = useField('lastName')
-const firstName = useField('firstName')
-const lastName = useField('lastName')
 const password = useField('password')
 const email = useField('email')
 const role = useField('role')
