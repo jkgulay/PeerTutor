@@ -21,8 +21,8 @@ import HomeLayout from '@/components/layout/HomeLayout.vue'
                 <!-- Tutor Name and Subtitle -->
                 <v-col>
                   <div>
-                    <h3>Tutor Name#1</h3>
-                    <p>Tutor</p>
+                    <h3>Jun Kyle</h3>
+                    <p>Software Engineer</p>
                   </div>
                 </v-col>
 
@@ -81,15 +81,15 @@ import HomeLayout from '@/components/layout/HomeLayout.vue'
                 <!-- Avatar -->
                 <v-col cols="auto">
                   <v-avatar>
-                    <v-img src="https://randomuser.me/api/portraits/men/21.jpg"></v-img>
+                    <v-img src="https://randomuser.me/api/portraits/men/5.jpg"></v-img>
                   </v-avatar>
                 </v-col>
 
                 <!-- Tutor Name and Subtitle -->
                 <v-col>
                   <div>
-                    <h3>Tutor Name#1</h3>
-                    <p>Tutor</p>
+                    <h3>Wolberine</h3>
+                    <p>College Student</p>
                   </div>
                 </v-col>
 
@@ -149,15 +149,15 @@ import HomeLayout from '@/components/layout/HomeLayout.vue'
                 <!-- Avatar -->
                 <v-col cols="auto">
                   <v-avatar>
-                    <v-img src="https://randomuser.me/api/portraits/men/21.jpg"></v-img>
+                    <v-img src="https://randomuser.me/api/portraits/men/53.jpg"></v-img>
                   </v-avatar>
                 </v-col>
 
                 <!-- Tutor Name and Subtitle -->
                 <v-col>
                   <div>
-                    <h3>Tutor Name#1</h3>
-                    <p>Tutor</p>
+                    <h3>Drunk It</h3>
+                    <p>Lawyer</p>
                   </div>
                 </v-col>
 
@@ -216,15 +216,15 @@ import HomeLayout from '@/components/layout/HomeLayout.vue'
                 <!-- Avatar -->
                 <v-col cols="auto">
                   <v-avatar>
-                    <v-img src="https://randomuser.me/api/portraits/men/21.jpg"></v-img>
+                    <v-img src="https://randomuser.me/api/portraits/men/95.jpg"></v-img>
                   </v-avatar>
                 </v-col>
 
                 <!-- Tutor Name and Subtitle -->
                 <v-col>
                   <div>
-                    <h3>Tutor Name#1</h3>
-                    <p>Tutor</p>
+                    <h3>James Bravo</h3>
+                    <p>Goat</p>
                   </div>
                 </v-col>
 

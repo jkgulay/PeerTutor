@@ -18,7 +18,7 @@ const location = ref('Butuan City, Philippines')
 
           <v-container class="profile-header">
             <v-avatar class="profile-img" size="140">
-              <v-img src="/public/profile.jpg" alt="Profile Image"></v-img>
+              <v-img src="https://randomuser.me/api/portraits/men/91.jpg" alt="Profile Image"></v-img>
             </v-avatar>
             <div class="profile-info">
               <h2 class="profile-name">{{ username }}</h2>

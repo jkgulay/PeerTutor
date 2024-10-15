@@ -33,9 +33,18 @@ const toggleDrawer = () => {
         <v-spacer></v-spacer>
 
         <!-- App Bar Icons -->
-        <v-btn icon>
-          <v-icon>mdi-magnify</v-icon>
-        </v-btn>
+        <v-card-text>
+          <v-text-field
+            :loading="loading"
+            append-inner-icon="mdi-magnify"
+            density="compact"
+            label="Search Tutor"
+            variant="solo"
+            hide-details
+            single-line
+            @click:append-inner="onClick"
+          ></v-text-field>
+        </v-card-text>
 
         <v-btn icon>
           <v-icon>mdi-star</v-icon>
@@ -70,6 +79,9 @@ const toggleDrawer = () => {
 
           <!-- Navigation List -->
           <v-list density="compact" nav>
+            <v-list-item prepend-icon="mdi-home"
+              ><RouterLink class="text-white" to="/home">Home</RouterLink></v-list-item
+            >
             <v-list-item prepend-icon="mdi-account-box"
               ><RouterLink class="text-white" to="/profile">Profile</RouterLink></v-list-item
             >
