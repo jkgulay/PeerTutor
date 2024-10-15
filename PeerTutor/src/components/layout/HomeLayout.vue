@@ -68,8 +68,10 @@ const toggleDrawer = () => {
 
           <!-- Navigation List -->
           <v-list density="compact" nav>
-            <v-list-item prepend-icon="mdi-account-box" title="My Profile"></v-list-item>
-            <v-list-item prepend-icon="mdi-logout" title="Logout"></v-list-item>
+            <v-list-item prepend-icon="mdi-account-box" ><RouterLink class="text-white" to="">Profile</RouterLink
+              ></v-list-item>
+            <v-list-item prepend-icon="mdi-logout" ><RouterLink class="text-white" to="./">Logout</RouterLink
+              ></v-list-item>
           </v-list>
         </v-navigation-drawer>
 

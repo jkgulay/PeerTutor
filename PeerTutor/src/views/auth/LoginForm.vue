@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useField, useForm } from 'vee-validate'
 
-const { check } = useForm({
+const { handleSubmit } = useForm({
   validationSchema: {
     password(value) {
       return /^[0-9-]{7,}$/.test(value) || 'Password needs to be at least 7 digits.'
@@ -18,10 +18,13 @@ const visible = ref(false)
 const password = useField('password')
 const email = useField('email')
 const loading = ref(false)
+const submit = handleSubmit((values) => {
+  alert(JSON.stringify(values, null, 2))
+})
 </script>
 
 <template>
-  <v-form fast-fail @submit.prevent>
+  <v-form @submit.prevent="submit" fast-fail>
     <v-text-field
       class="mx-3 my-2"
       variant="outlined"
