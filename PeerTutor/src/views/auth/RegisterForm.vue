@@ -115,8 +115,8 @@ const submit = handleSubmit((values) => {
     </v-row>
 
     <!-- Role Select -->
-    <v-row class="mx-3 "  style="height: 50px;">
-      <v-select :error-messages="role.errorMessage" :items="items" label="Role" ></v-select>
+    <v-row class="mx-3" style="height: 50px">
+      <v-select :error-messages="role.errorMessage" :items="items" label="Role"></v-select>
     </v-row>
 
     <!-- Submit Button -->
