@@ -65,7 +65,6 @@ const submit = handleSubmit((values) => {
         style="border-radius: 30px"
       >
       <RouterLink class="text-teal-lighten-3 text-decoration-none" to="/home">Sign In</RouterLink>
-        
       </v-btn></v-container
     >
   </v-form>
