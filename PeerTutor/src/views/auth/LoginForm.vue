@@ -63,9 +63,9 @@ const submit = handleSubmit((values) => {
         block
         elevation="10"
         style="border-radius: 30px"
-        href="./home"
       >
-        <span style="color: #80cbc4">Sign In</span>
+      <RouterLink class="text-teal-lighten-3" to="/home">Sign In</RouterLink>
+        
       </v-btn></v-container
     >
   </v-form>
