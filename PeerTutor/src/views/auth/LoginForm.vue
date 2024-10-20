@@ -64,7 +64,7 @@ const submit = handleSubmit((values) => {
         elevation="10"
         style="border-radius: 30px"
       >
-      <RouterLink class="text-teal-lighten-3" to="/home">Sign In</RouterLink>
+      <RouterLink class="text-teal-lighten-3 text-decoration-none" to="/home">Sign In</RouterLink>
         
       </v-btn></v-container
     >

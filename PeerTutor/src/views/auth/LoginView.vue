@@ -33,7 +33,7 @@ import LoginForm from './LoginForm.vue'
                   target="_blank"
                 >
                   Don't have an account?
-                  <RouterLink class="text-teal-lighten-3" to="/register">Sign up now</RouterLink
+                  <RouterLink class="text-teal-lighten-3 text-decoration-none" to="/register">Sign up now</RouterLink
                   ><v-icon icon="mdi-chevron-right"></v-icon>
                 </a>
               </v-card-text> </v-card
