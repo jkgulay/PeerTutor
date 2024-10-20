@@ -24,7 +24,7 @@ const toggleDrawer = () => {
         <v-col class="d-flex align-center">
           <v-img src="/logo/try2.png" max-width="50"></v-img>
           <v-app-bar-title>
-            <RouterLink to="/home" style="text-decoration: none">
+            <RouterLink to="/home" style="text-decoration: none ">
               <span class="font-weight-bold" style="color: #80cbc4"> PeerTutor </span>
             </RouterLink>
           </v-app-bar-title>
@@ -87,13 +87,13 @@ const toggleDrawer = () => {
           <!-- Navigation List -->
           <v-list density="compact" nav>
             <v-list-item prepend-icon="mdi-home"
-              ><RouterLink class="text-white" to="/home">Home</RouterLink></v-list-item
+              ><RouterLink class="text-white text-decoration-none" to="/home">Home</RouterLink></v-list-item
             >
             <v-list-item prepend-icon="mdi-account-box"
-              ><RouterLink class="text-white" to="/profile">Profile</RouterLink></v-list-item
+              ><RouterLink class="text-white text-decoration-none" to="/profile">Profile</RouterLink></v-list-item
             >
             <v-list-item prepend-icon="mdi-logout"
-              ><RouterLink class="text-white" to="./">Logout</RouterLink></v-list-item
+              ><RouterLink class="text-white text-decoration-none" to="./">Logout</RouterLink></v-list-item
             >
           </v-list>
         </v-navigation-drawer>
