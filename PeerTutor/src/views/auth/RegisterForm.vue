@@ -44,18 +44,20 @@ const submit = handleSubmit((values) => {
 <template>
   <v-form @submit.prevent="submit" fast-fail>
     <v-row class="d-flex mx-auto" align="center">
-      <v-col cols="12" md="6">
-        <v-text-field
-          variant="outlined"
-          prepend-inner-icon="mdi-badge-account-outline"
-          density="compact"
-          :error-messages="firstName.errorMessage"
-          placeholder="First Name"
-          label="First Name"
-          hide-details="auto"
-          clearable
-        ></v-text-field>
-      </v-col>
+      <v-row class="d-flex mx-auto" align="center">
+        <v-col cols="12" md="12">
+          <v-text-field
+            variant="outlined"
+            prepend-inner-icon="mdi-badge-account-outline"
+            density="compact"
+            :error-messages="firstName.errorMessage"
+            placeholder="First Name"
+            label="First Name"
+            hide-details="auto"
+            clearable
+          ></v-text-field>
+        </v-col>
+      </v-row>
       <v-col cols="12" md="6">
         <v-text-field
           variant="outlined"
@@ -115,9 +117,14 @@ const submit = handleSubmit((values) => {
     </v-row>
 
     <!-- Role Select -->
-    <v-row class="mx-3" >
-      <v-select :error-messages="role.errorMessage" :items="items" label="Role" variant="outlined"></v-select>
-    </v-row>
+    <v-col cols="8" md="5" align="center">
+      <v-select
+        :error-messages="role.errorMessage"
+        :items="items"
+        label="Role"
+        variant="outlined"
+      ></v-select>
+    </v-col>
 
     <!-- Submit Button -->
     <v-row align="center">
