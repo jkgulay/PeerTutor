@@ -17,42 +17,41 @@ const toggleDrawer = () => {
         app
         color="primary"
       >
-        <!-- App Bar Nav Icon to toggle the drawer -->
+        <!-- Drawer Toggle Icon -->
         <v-app-bar-nav-icon @click="toggleDrawer"></v-app-bar-nav-icon>
 
         <!-- Logo and Title -->
         <v-col class="d-flex align-center">
           <v-img src="/logo/try2.png" max-width="50"></v-img>
-          <v-app-bar-title>
-            <RouterLink to="/home" style="text-decoration: none ">
-              <span class="font-weight-bold" style="color: #80cbc4"> PeerTutor </span>
+          <v-app-bar-title class="pl-2">
+            <RouterLink to="/home" style="text-decoration: none">
+              <span class="font-weight-bold" style="color: #80cbc4">PeerTutor</span>
             </RouterLink>
           </v-app-bar-title>
         </v-col>
 
         <v-spacer></v-spacer>
 
-        <!-- App Bar Icons -->
-        <v-card-text>
+        <!-- Search Bar -->
+        <v-col class="align-center d-flex" cols="4" md="4">
           <v-text-field
             :loading="loading"
             append-inner-icon="mdi-magnify"
             density="compact"
-            label="Search Tutor"
+            label="Search"
             variant="solo"
             hide-details
             single-line
             @click:append-inner="onClick"
           ></v-text-field>
-        </v-card-text>
+        </v-col>
 
-        <v-btn icon>
-          <v-icon>mdi-star</v-icon>
-        </v-btn>
-
-        <v-btn icon>
-          <v-icon>mdi-dots-vertical</v-icon>
-        </v-btn>
+        <!-- Chat Icon -->
+        <v-col class="align-center d-flex justify-end" >
+          <v-btn icon>
+            <v-icon>mdi-chat</v-icon>
+          </v-btn>
+        </v-col>
       </v-app-bar>
 
       <!-- Main Content Layout -->
@@ -87,13 +86,19 @@ const toggleDrawer = () => {
           <!-- Navigation List -->
           <v-list density="compact" nav>
             <v-list-item prepend-icon="mdi-home"
-              ><RouterLink class="text-white text-decoration-none" to="/home">Home</RouterLink></v-list-item
+              ><RouterLink class="text-white text-decoration-none" to="/home"
+                >Home</RouterLink
+              ></v-list-item
             >
             <v-list-item prepend-icon="mdi-account-box"
-              ><RouterLink class="text-white text-decoration-none" to="/profile">Profile</RouterLink></v-list-item
+              ><RouterLink class="text-white text-decoration-none" to="/profile"
+                >Profile</RouterLink
+              ></v-list-item
             >
             <v-list-item prepend-icon="mdi-logout"
-              ><RouterLink class="text-white text-decoration-none" to="./">Logout</RouterLink></v-list-item
+              ><RouterLink class="text-white text-decoration-none" to="./"
+                >Logout</RouterLink
+              ></v-list-item
             >
           </v-list>
         </v-navigation-drawer>
