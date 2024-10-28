@@ -123,6 +123,7 @@ const submit = handleSubmit((values) => {
         :items="items"
         label="Role"
         variant="outlined"
+        density="compact"
       ></v-select>
     </v-col>
 
