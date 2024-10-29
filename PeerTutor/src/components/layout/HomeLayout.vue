@@ -17,10 +17,8 @@ const toggleDrawer = () => {
         app
         color="primary"
       >
-        <!-- Drawer Toggle Icon -->
         <v-app-bar-nav-icon @click="toggleDrawer"></v-app-bar-nav-icon>
 
-        <!-- Logo and Title -->
         <v-col class="d-flex align-center">
           <v-img src="/logo/try2.png" max-width="50"></v-img>
           <v-app-bar-title class="pl-2">
@@ -30,10 +28,7 @@ const toggleDrawer = () => {
           </v-app-bar-title>
         </v-col>
 
-        <v-spacer></v-spacer>
-
-        <!-- Search Bar -->
-        <v-col class="align-center d-flex" cols="4" md="4">
+        <v-col cols="5" class="d-flex justify-center">
           <v-text-field
             :loading="loading"
             append-inner-icon="mdi-magnify"
@@ -43,15 +38,16 @@ const toggleDrawer = () => {
             hide-details
             single-line
             @click:append-inner="onClick"
+            class="mx-4"
+            style="max-width: 400px; width: 100%"
           ></v-text-field>
         </v-col>
 
-        <!-- Chat Icon -->
-        <v-col class="align-center d-flex justify-end" >
-          <v-btn icon>
-            <v-icon>mdi-chat</v-icon>
-          </v-btn>
-        </v-col>
+        <v-spacer></v-spacer>
+
+        <v-btn icon>
+          <v-icon>mdi-chat</v-icon>
+        </v-btn>
       </v-app-bar>
 
       <!-- Main Content Layout -->
@@ -73,7 +69,6 @@ const toggleDrawer = () => {
           "
         >
           <v-list>
-            <!-- User Avatar and Info -->
             <v-list-item
               prepend-avatar="https://randomuser.me/api/portraits/men/91.jpg"
               subtitle="user123@gmail.com"
@@ -83,7 +78,6 @@ const toggleDrawer = () => {
 
           <v-divider></v-divider>
 
-          <!-- Navigation List -->
           <v-list density="compact" nav>
             <v-list-item prepend-icon="mdi-home"
               ><RouterLink class="text-white text-decoration-none" to="/home"
