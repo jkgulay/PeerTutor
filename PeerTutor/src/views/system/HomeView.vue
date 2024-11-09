@@ -216,9 +216,60 @@ export default {
                     height="40px"
                     href=""
                     append-icon="mdi-phone-plus"
+                    @click="dialog = true"
                   >
                     Contact Tutor
                   </v-btn>
+                  <v-dialog v-model="dialog" max-width="550">
+                    <v-card :disabled="loading" :loading="loading" class="mb-4">
+                      <template v-slot:loader="{ isActive }">
+                        <v-progress-linear
+                          :active="isActive"
+                          color="deep-purple"
+                          height="4"
+                          indeterminate
+                        ></v-progress-linear>
+                      </template>
+
+                      <!-- Header Section -->
+                      <v-card-title class="text-h5">Chat with Wolberine</v-card-title>
+                      <v-divider class="mx-4 mb-2"></v-divider>
+
+                      <!-- Messages Section -->
+                      <v-container class="py-2" style="max-height: 400px; overflow-y: auto">
+                        <v-row v-for="(msg, index) in messages" :key="index" class="mb-2">
+                          <v-col :class="msg.isUser ? 'text-end' : 'text-start'" cols="12">
+                            <v-chip
+                              :color="msg.isUser ? 'blue lighten-4' : 'grey lighten-3'"
+                              class="text-body-1"
+                              :text-color="msg.isUser ? 'blue--text' : 'grey--text'"
+                              label
+                            >
+                              {{ msg.text }}
+                            </v-chip>
+                          </v-col>
+                        </v-row>
+                      </v-container>
+
+                      <!-- Message Input Section -->
+                      <v-divider class="mx-4 mb-2"></v-divider>
+                      <v-container>
+                        <v-row>
+                          <v-col cols="12">
+                            <v-text-field
+                              v-model="newMessage"
+                              :append-icon="newMessage ? 'mdi-send' : 'mdi-microphone'"
+                              clear-icon="mdi-close-circle"
+                              label="Type a message..."
+                              variant="outlined"
+                              clearable
+                              @click:append="sendMessage"
+                            ></v-text-field>
+                          </v-col>
+                        </v-row>
+                      </v-container>
+                    </v-card>
+                  </v-dialog>
                 </v-col>
 
                 <!-- Rating Section -->
