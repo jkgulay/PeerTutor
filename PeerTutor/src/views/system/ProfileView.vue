@@ -2,7 +2,6 @@
 import { ref } from 'vue'
 import HomeLayout from '@/components/layout/HomeLayout.vue'
 
-// Ref variables
 const username = ref('Christ Charl Gabales')
 const jobTitle = ref('Software Engineer')
 const location = ref('Butuan City, Philippines')
@@ -14,10 +13,24 @@ const items = ref(['Student', 'Tutor'])
 export default {
   data() {
     return {
-      dialog: false
+      dialog: false,
+      toggle_one: false
+    };
+  },
+  computed: {
+    buttonStyle() {
+      return {
+        backgroundColor: this.toggle_one ? '#2E7D32' : 'gray',
+        color: 'white', 
+      };
+    }
+  },
+  methods: {
+    toggleAvailability() {
+      this.toggle_one = !this.toggle_one; 
     }
   }
-}
+};
 </script>
 
 <template>
@@ -99,7 +112,7 @@ export default {
                       <v-row dense class="d-flex justify-center">
                         <v-col cols="12" md="5" sm="6">
                           <v-text-field
-                            label="Email" 
+                            label="Email"
                             required
                             variant="outlined"
                             prepend-inner-icon="mdi-email"
@@ -127,7 +140,16 @@ export default {
                 </v-dialog>
               </v-col>
               <v-col cols="12" md="5" class="mb-2">
-                <v-btn block outlined rounded large> Settings </v-btn>
+                <v-btn
+                  block
+                  outlined
+                  rounded
+                  large
+                  :style="buttonStyle"
+                  @click="toggleAvailability"
+                >
+                  {{ toggle_one ? 'Available' : 'Not Available' }}
+                </v-btn>
               </v-col>
             </v-row>
 

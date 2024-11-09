@@ -2,6 +2,39 @@
 import HomeLayout from '@/components/layout/HomeLayout.vue'
 </script>
 
+<script>
+export default {
+  data() {
+    return {
+      loading: false,
+      newMessage: '',
+      messages: [
+        { text: 'Hello! How can I help you today?', isUser: false },
+        { text: 'Can we discuss the project details?', isUser: true }
+      ],
+      dialog: false
+    }
+  },
+
+  methods: {
+    sendMessage() {
+      if (this.newMessage.trim()) {
+        // Push new message to the array
+        this.messages.push({ text: this.newMessage, isUser: true })
+        // Clear input field
+        this.newMessage = ''
+        // Simulate a response (optional)
+        this.simulateResponse()
+      }
+    },
+    simulateResponse() {
+      setTimeout(() => {
+        this.messages.push({ text: 'Sure! Let me know the specifics.', isUser: false })
+      }, 1000) // Simulate delay
+    }
+  }
+}
+</script>
 <template>
   <HomeLayout>
     <template #content>
@@ -28,9 +61,9 @@ import HomeLayout from '@/components/layout/HomeLayout.vue'
 
                 <!-- Social Media Icons -->
                 <v-col cols="auto" class="d-flex justify-end">
-                  <v-btn icon="mdi-gmail"></v-btn>
-                  <v-btn icon="mdi-facebook"></v-btn>
-                  <v-btn icon="mdi-linkedin"></v-btn>
+                  <v-btn icon="mdi-gmail" text color="#05161a" density="compact"></v-btn>
+                  <v-btn icon="mdi-facebook" text color="#05161a" density="compact"></v-btn>
+                  <v-btn icon="mdi-linkedin" text color="#05161a" density="compact"></v-btn>
                 </v-col>
               </v-row>
 
@@ -61,9 +94,60 @@ import HomeLayout from '@/components/layout/HomeLayout.vue'
                     height="40px"
                     href=""
                     append-icon="mdi-phone-plus"
+                    @click="dialog = true"
                   >
                     Contact Tutor
                   </v-btn>
+                  <v-dialog v-model="dialog" max-width="550">
+                    <v-card :disabled="loading" :loading="loading" class="mb-4">
+                      <template v-slot:loader="{ isActive }">
+                        <v-progress-linear
+                          :active="isActive"
+                          color="deep-purple"
+                          height="4"
+                          indeterminate
+                        ></v-progress-linear>
+                      </template>
+
+                      <!-- Header Section -->
+                      <v-card-title class="text-h5">Chat with Jun Kyle</v-card-title>
+                      <v-divider class="mx-4 mb-2"></v-divider>
+
+                      <!-- Messages Section -->
+                      <v-container class="py-2" style="max-height: 400px; overflow-y: auto">
+                        <v-row v-for="(msg, index) in messages" :key="index" class="mb-2">
+                          <v-col :class="msg.isUser ? 'text-end' : 'text-start'" cols="12">
+                            <v-chip
+                              :color="msg.isUser ? 'blue lighten-4' : 'grey lighten-3'"
+                              class="text-body-1"
+                              :text-color="msg.isUser ? 'blue--text' : 'grey--text'"
+                              label
+                            >
+                              {{ msg.text }}
+                            </v-chip>
+                          </v-col>
+                        </v-row>
+                      </v-container>
+
+                      <!-- Message Input Section -->
+                      <v-divider class="mx-4 mb-2"></v-divider>
+                      <v-container>
+                        <v-row>
+                          <v-col cols="12">
+                            <v-text-field
+                              v-model="newMessage"
+                              :append-icon="newMessage ? 'mdi-send' : 'mdi-microphone'"
+                              clear-icon="mdi-close-circle"
+                              label="Type a message..."
+                              variant="outlined"
+                              clearable
+                              @click:append="sendMessage"
+                            ></v-text-field>
+                          </v-col>
+                        </v-row>
+                      </v-container>
+                    </v-card>
+                  </v-dialog>
                 </v-col>
 
                 <!-- Rating Section -->
@@ -99,9 +183,9 @@ import HomeLayout from '@/components/layout/HomeLayout.vue'
 
                 <!-- Social Media Icons -->
                 <v-col cols="auto" class="d-flex justify-end">
-                  <v-icon icon="mdi-gmail" class="mx-1"></v-icon>
-                  <v-icon icon="mdi-facebook" class="mx-1"></v-icon>
-                  <v-icon icon="mdi-twitter" class="mx-1"></v-icon>
+                  <v-btn icon="mdi-gmail" text color="#05161a" density="compact"></v-btn>
+                  <v-btn icon="mdi-facebook" text color="#05161a" density="compact"></v-btn>
+                  <v-btn icon="mdi-linkedin" text color="#05161a" density="compact"></v-btn>
                 </v-col>
               </v-row>
 
@@ -171,9 +255,9 @@ import HomeLayout from '@/components/layout/HomeLayout.vue'
 
                 <!-- Social Media Icons -->
                 <v-col cols="auto" class="d-flex justify-end">
-                  <v-icon icon="mdi-gmail" class="mx-1"></v-icon>
-                  <v-icon icon="mdi-facebook" class="mx-1"></v-icon>
-                  <v-icon icon="mdi-twitter" class="mx-1"></v-icon>
+                  <v-btn icon="mdi-gmail" text color="#05161a" density="compact"></v-btn>
+                  <v-btn icon="mdi-facebook" text color="#05161a" density="compact"></v-btn>
+                  <v-btn icon="mdi-linkedin" text color="#05161a" density="compact"></v-btn>
                 </v-col>
               </v-row>
 
@@ -244,9 +328,9 @@ import HomeLayout from '@/components/layout/HomeLayout.vue'
 
                 <!-- Social Media Icons -->
                 <v-col cols="auto" class="d-flex justify-end">
-                  <v-icon icon="mdi-gmail" class="mx-1"></v-icon>
-                  <v-icon icon="mdi-facebook" class="mx-1"></v-icon>
-                  <v-icon icon="mdi-twitter" class="mx-1"></v-icon>
+                  <v-btn icon="mdi-gmail" text color="#05161a" density="compact"></v-btn>
+                  <v-btn icon="mdi-facebook" text color="#05161a" density="compact"></v-btn>
+                  <v-btn icon="mdi-linkedin" text color="#05161a" density="compact"></v-btn>
                 </v-col>
               </v-row>
 
@@ -315,9 +399,9 @@ import HomeLayout from '@/components/layout/HomeLayout.vue'
 
                 <!-- Social Media Icons -->
                 <v-col cols="auto" class="d-flex justify-end">
-                  <v-icon icon="mdi-gmail" class="mx-1"></v-icon>
-                  <v-icon icon="mdi-facebook" class="mx-1"></v-icon>
-                  <v-icon icon="mdi-twitter" class="mx-1"></v-icon>
+                  <v-btn icon="mdi-gmail" text color="#05161a" density="compact"></v-btn>
+                  <v-btn icon="mdi-facebook" text color="#05161a" density="compact"></v-btn>
+                  <v-btn icon="mdi-linkedin" text color="#05161a" density="compact"></v-btn>
                 </v-col>
               </v-row>
 
@@ -387,9 +471,9 @@ import HomeLayout from '@/components/layout/HomeLayout.vue'
 
                 <!-- Social Media Icons -->
                 <v-col cols="auto" class="d-flex justify-end">
-                  <v-icon icon="mdi-gmail" class="mx-1"></v-icon>
-                  <v-icon icon="mdi-facebook" class="mx-1"></v-icon>
-                  <v-icon icon="mdi-twitter" class="mx-1"></v-icon>
+                  <v-btn icon="mdi-gmail" text color="#05161a" density="compact"></v-btn>
+                  <v-btn icon="mdi-facebook" text color="#05161a" density="compact"></v-btn>
+                  <v-btn icon="mdi-linkedin" text color="#05161a" density="compact"></v-btn>
                 </v-col>
               </v-row>
 
