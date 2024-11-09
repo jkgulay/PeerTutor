@@ -148,7 +148,7 @@ export default {
       </v-layout>
 
       <!-- Footer -->
-      <v-footer style="background: linear-gradient(#072e33, #05161a)" app class="d-flex">
+      <v-footer style="background: linear-gradient(#072e33, #05161a)"  class="d-flex" padless >
         <v-row justify="center" no-gutters>
           <v-col class="text-center mt-4" cols="12" style="color: #26a69a">
             {{ new Date().getFullYear() }} — <strong>Kayel</strong>
