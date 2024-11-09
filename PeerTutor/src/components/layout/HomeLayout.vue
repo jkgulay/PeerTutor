@@ -7,6 +7,16 @@ const toggleDrawer = () => {
 }
 </script>
 
+<script>
+export default {
+  data() {
+    return {
+      dialog: false
+    }
+  }
+}
+</script>
+
 <template>
   <v-responsive>
     <v-app :theme="theme">
@@ -45,9 +55,41 @@ const toggleDrawer = () => {
 
         <v-spacer></v-spacer>
 
-        <v-btn icon>
+        <v-btn icon @click="dialog = true">
           <v-icon>mdi-chat</v-icon>
         </v-btn>
+        <v-dialog v-model="dialog" max-width="550">
+          <v-card>
+            <!-- Messages Box Section -->
+            <v-divider class="mx-4 mb-2"></v-divider>
+            <v-card-title>Messages</v-card-title>
+            <v-container>
+              <v-row class="d-flex flex-column">
+                <v-col cols="12" class="d-flex align-center mb-2">
+                  <v-avatar size="32">
+                    <img src="https://randomuser.me/api/portraits/men/5.jpg" alt="Sender Profile" />
+                  </v-avatar>
+                  <div class="ms-2">
+                    <div class="text-h6">Sender Name</div>
+                    <div class="text-body-2">Hey, I'd like to schedule a session!</div>
+                  </div>
+                </v-col>
+
+                <v-col cols="12" class="d-flex align-center mb-2">
+                  <v-avatar size="32">
+                    <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="Receiver Profile" />
+                  </v-avatar>
+                  <div class="ms-2">
+                    <div class="text-h6">Receiver Name</div>
+                    <div class="text-body-2">Sure, what time works for you?</div>
+                  </div>
+                </v-col>
+
+                <!-- Additional messages can be added here in similar format -->
+              </v-row>
+            </v-container>
+          </v-card>
+        </v-dialog>
       </v-app-bar>
 
       <!-- Main Content Layout -->
