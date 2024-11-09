@@ -8,8 +8,6 @@ const jobTitle = ref('Software Engineer')
 const location = ref('Butuan City, Philippines')
 
 const items = ref(['Student', 'Tutor'])
-const visible = ref(false)
-const repeatVisible = ref(false)
 </script>
 
 <script>
@@ -65,15 +63,15 @@ export default {
                 </v-btn>
 
                 <!-- Dialog Component -->
-                <v-dialog v-model="dialog" max-width="600">
+                <v-dialog v-model="dialog" max-width="550">
                   <v-card>
-                    <v-card-title>
+                    <v-card-title class="text-center">
                       <v-icon class="mr-2">mdi-account</v-icon>
                       User Profile
                     </v-card-title>
 
                     <v-card-text>
-                      <v-row dense>
+                      <v-row dense class="d-flex justify-center">
                         <v-col cols="12" md="4" sm="6">
                           <v-text-field
                             label="First name"
@@ -97,10 +95,11 @@ export default {
                             clearable
                           ></v-text-field>
                         </v-col>
-
-                        <v-col cols="12" md="4" sm="6">
+                      </v-row>
+                      <v-row dense class="d-flex justify-center">
+                        <v-col cols="12" md="5" sm="6">
                           <v-text-field
-                            label="Email"
+                            label="Email" 
                             required
                             variant="outlined"
                             prepend-inner-icon="mdi-email"
@@ -109,35 +108,12 @@ export default {
                             clearable
                           ></v-text-field>
                         </v-col>
-
-                        <v-col cols="12" md="4" sm="6">
-                          <v-text-field
-                            label="Password"
-                            type="password"
-                            required
-                            variant="outlined"
-                            prepend-inner-icon="mdi-lock-check"
-                            :append-inner-icon="visible ? 'mdi-eye-off' : 'mdi-eye'"
-                            @click:append-inner="visible = !visible"
-                          ></v-text-field>
-                        </v-col>
-
-                        <v-col cols="12" md="4" sm="6">
-                          <v-text-field
-                            label="Confirm Password"
-                            type="password"
-                            required
-                            variant="outlined"
-                            prepend-inner-icon="mdi-lock-check"
-                            :append-inner-icon="repeatVisible ? 'mdi-eye-off' : 'mdi-eye'"
-                            @click:append-inner="repeatVisible = !repeatVisible"
-                          ></v-text-field>
-                        </v-col>
-
-                        <v-col cols="12" sm="4">
+                        <v-col cols="12" sm="3">
                           <v-select label="Role" :items="items" variant="outlined"></v-select>
                         </v-col>
                       </v-row>
+
+                      <v-row dense class="d-flex"> </v-row>
                     </v-card-text>
 
                     <v-divider></v-divider>

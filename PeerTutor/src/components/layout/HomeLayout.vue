@@ -7,6 +7,16 @@ const toggleDrawer = () => {
 }
 </script>
 
+<script>
+export default {
+  data() {
+    return {
+      dialog: false
+    }
+  }
+}
+</script>
+
 <template>
   <v-responsive>
     <v-app :theme="theme">
@@ -45,9 +55,14 @@ const toggleDrawer = () => {
 
         <v-spacer></v-spacer>
 
-        <v-btn icon>
+        <v-btn icon @click="dialog = true">
           <v-icon>mdi-chat</v-icon>
         </v-btn>
+        <v-dialog v-model="dialog" max-width="550">
+           <v-card>
+
+           </v-card>
+           </v-dialog>
       </v-app-bar>
 
       <!-- Main Content Layout -->

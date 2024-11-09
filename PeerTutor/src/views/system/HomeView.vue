@@ -28,9 +28,9 @@ import HomeLayout from '@/components/layout/HomeLayout.vue'
 
                 <!-- Social Media Icons -->
                 <v-col cols="auto" class="d-flex justify-end">
-                  <v-icon icon="mdi-gmail" class="mx-1"></v-icon>
-                  <v-icon icon="mdi-facebook" class="mx-1"></v-icon>
-                  <v-icon icon="mdi-twitter" class="mx-1"></v-icon>
+                  <v-btn icon="mdi-gmail"></v-btn>
+                  <v-btn icon="mdi-facebook"></v-btn>
+                  <v-btn icon="mdi-linkedin"></v-btn>
                 </v-col>
               </v-row>
 
