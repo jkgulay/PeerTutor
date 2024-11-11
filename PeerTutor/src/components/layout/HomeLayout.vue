@@ -77,7 +77,10 @@ export default {
 
                 <v-col cols="12" class="d-flex align-center mb-2">
                   <v-avatar size="32">
-                    <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="Receiver Profile" />
+                    <img
+                      src="https://randomuser.me/api/portraits/men/1.jpg"
+                      alt="Receiver Profile"
+                    />
                   </v-avatar>
                   <div class="ms-2">
                     <div class="text-h6">Receiver Name</div>
@@ -148,7 +151,7 @@ export default {
       </v-layout>
 
       <!-- Footer -->
-      <v-footer style="background: linear-gradient(#072e33, #05161a)"  class="d-flex" padless >
+      <v-footer style="background: linear-gradient(#072e33, #05161a)" class="d-flex" padless>
         <v-row justify="center" no-gutters>
           <v-col class="text-center mt-4" cols="12" style="color: #26a69a">
             {{ new Date().getFullYear() }} — <strong>Kayel</strong>
