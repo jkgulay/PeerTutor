@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { supabase } from '@/utils/supabase'
 
@@ -19,20 +19,60 @@ const router = useRouter()
 const onLogout = async () => {
   try {
     const { error } = await supabase.auth.signOut()
-    
+
     if (error) {
       console.error('Error during logout:', error.message)
-   
       return
     }
-    router.replace({ name: 'login' }) 
+    router.replace({ name: 'login' })
   } catch (err) {
-
     console.error('Unexpected error during logout:', err)
-
   }
 }
+
+const userProfile = ref({
+  firstname: '',
+  lastname: '',
+  email: '',
+  avatar: ''
+})
+
+const fetchUserProfile = async () => {
+  const { data: user, error } = await supabase.auth.getUser()
+
+  if (error) {
+    console.error('Error fetching user:', error)
+    return
+  }
+
+  if (user) {
+    const role = user.user_metadata?.role || 'Student'
+    const tableName = role === 'Tutor' ? 'tutors' : 'students'
+
+    const { data, error } = await supabase
+      .from(tableName)
+      .select('firstname, lastname, email, avatar') // Adjust fields based on your table structure
+      .eq('id', user.id)
+      .single() // Get a single record
+
+    if (error) {
+      console.error('Error fetching user profile:', error)
+    } else if (data) {
+      userProfile.value = {
+        firstname: data.firstname,
+        lastname: data.lastname,
+        email: data.email,
+        avatar: data.avatar || 'https://randomuser.me/api/portraits/men/91.jpg' // Default avatar if none exists
+      }
+    }
+  }
+}
+
+onMounted(() => {
+  fetchUserProfile()
+})
 </script>
+
 <template>
   <v-responsive>
     <v-app>
@@ -129,9 +169,9 @@ const onLogout = async () => {
         >
           <v-list>
             <v-list-item
-              prepend-avatar="https://randomuser.me/api/portraits/men/91.jpg"
-              subtitle="user123@gmail.com"
-              title="User Name"
+              :prepend-avatar="userProfile.avatar"
+              :title="`${userProfile.firstname} ${userProfile.lastname}`"
+              :subtitle="userProfile.email"
             ></v-list-item>
           </v-list>
 

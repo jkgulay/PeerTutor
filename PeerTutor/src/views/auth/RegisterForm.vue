@@ -34,6 +34,7 @@ const isRepeatPasswordVisible = ref(false)
 // Reference to the form
 const refVForm = ref()
 
+// Main submission function
 const onSubmit = async () => {
   // Reset form action state
   formAction.value = { ...formActionDefault }
@@ -41,7 +42,7 @@ const onSubmit = async () => {
 
   try {
     // Sign up with Supabase
-    const { data, error } = await supabase.auth.signUp({
+    const { data: signupData, error: signupError } = await supabase.auth.signUp({
       email: formData.value.email,
       password: formData.value.password,
       options: {
@@ -55,17 +56,37 @@ const onSubmit = async () => {
     })
 
     // Handle errors and success
-    if (error) {
-      console.error('Signup error:', error)
-      formAction.value.formErrorMessage = error.message || 'An error occurred. Please try again.'
-      formAction.value.formStatus = error.status
-    } else if (data) {
-      console.log('Signup successful:', data)
-      formAction.value.formSuccessMessage = 'Check your email to confirm registration!'
-      refVForm.value?.reset() // Reset the form
-      setTimeout(() => {
-        router.replace('/') // Redirect to home
-      }, 2000)
+    if (signupError) {
+      console.error('Signup error:', signupError)
+      formAction.value.formErrorMessage = signupError.message || 'An error occurred. Please try again.'
+      formAction.value.formStatus = signupError.status
+    } else if (signupData) {
+      // Determine the target table based on the role
+      const tableName = formData.value.role === 'Student' ? 'students' : 'tutors'
+
+      // Insert user profile data into the appropriate table
+      const { error: profileError } = await supabase
+        .from(tableName)
+        .insert([{
+          user_id: signupData.user.id,  // Link to Auth ID
+          firstname: formData.value.firstname,
+          email: formData.value.email,
+          lastname: formData.value.lastname,
+          occupation: formData.value.occupation,
+          role: formData.value.role
+        }])
+
+      if (profileError) {
+        console.error('Profile insertion error:', profileError)
+        formAction.value.formErrorMessage = profileError.message || 'An error occurred while creating the profile.'
+      } else {
+        console.log('Sign Up successful:', signupData)
+        formAction.value.formSuccessMessage = 'Check your email to confirm registration!'
+        refVForm.value?.reset() // Reset the form
+        setTimeout(() => {
+          router.replace('/') // Redirect to home
+        }, 2000)
+      }
     }
   } catch (err) {
     console.error('Unexpected error during signup:', err)
@@ -91,6 +112,7 @@ const onFormSubmit = () => {
   })
 }
 </script>
+
 
 <template>
   <AlertNotification
