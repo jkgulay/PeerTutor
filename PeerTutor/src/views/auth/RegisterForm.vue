@@ -1,11 +1,13 @@
 <script setup>
-import { ref } from 'vue'
 import {
   requiredValidator,
   emailValidator,
   passwordValidator,
   confirmedValidator
 } from '@/utils/validators'
+import { ref } from 'vue'
+import AlertNotification from '@/components/common/AlertNotification.vue'
+import { supabase, formActionDefault } from '@/utils/supabase'
 
 const formDataDefault = {
   firstname: '',
@@ -20,13 +22,41 @@ const formDataDefault = {
 const formData = ref({
   ...formDataDefault
 })
-const onSubmit = () => {
-  alert(formData.value.email)
-}
+const formAction = ref({
+  ...formActionDefault
+})
 
 const isPasswordVisible = ref(false)
 const isRepeatPasswordVisible = ref(false)
 const refVForm = ref()
+
+const onSubmit = async () => {
+  formAction.value = { ...formActionDefault }
+  formAction.value.formProcess = true
+
+  const { data, error } = await supabase.auth.signUp({
+    email: formData.value.email,
+    password: formData.value.password,
+    options: {
+      data: {
+        firstname: formData.value.firstname,
+        lastname: formData.value.lastname,
+        role: formData.value.role,
+        occupation: formData.value.occupation
+      }
+    }
+  })
+  if (error) {
+    console.log(error)
+    formAction.value.formErrorMessage = error.message
+    formAction.value.formStatus = error.status
+  } else if (data) {
+    console.log(data)
+    formAction.value.formSuccessMessage = 'Sucessfully Registered!'
+    refVForm.value?.reset()
+  }
+  formAction.value.formProcess = false
+}
 
 const onFormSubmit = () => {
   refVForm.value?.validate().then(({ valid }) => {
@@ -36,7 +66,12 @@ const onFormSubmit = () => {
 </script>
 
 <template>
-  <v-form ref="refVForm" @submit.prevent="onFormSubmit">
+  <AlertNotification
+    :form-success-message="formAction.formSuccessMessage"
+    :form-error-message="formAction.formErrorMessage"
+  ></AlertNotification>
+
+  <v-form class="mt-5" ref="refVForm" @submit.prevent="onFormSubmit">
     <v-row class="d-flex mx-auto" align="center" justify="center">
       <!-- First Name and Last Name Fields -->
       <v-col cols="12" md="6">
@@ -164,6 +199,8 @@ const onFormSubmit = () => {
           block
           elevation="10"
           style="border-radius: 30px"
+          :disabled="formAction.formProcess"
+          :loading="formAction.formProcess"
         >
           <span style="color: #80cbc4">Create</span>
         </v-btn>
