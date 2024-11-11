@@ -34,7 +34,7 @@ const onLogout = async () => {
 </script>
 <template>
   <v-responsive>
-    <v-app :theme="theme">
+    <v-app>
       <!-- App Bar -->
       <v-app-bar
         style="background: linear-gradient(#05161a, #072e33)"

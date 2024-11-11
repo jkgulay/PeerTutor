@@ -48,12 +48,28 @@ const onSubmit = async () => {
 
   //Turn off processing
   formAction.value.formProcess = false
+
+
+const isPasswordVisible = ref(false)
+const refVForm = ref()
+
+// Default form data
+const formData = ref({
+  email: '',
+  password: ''
+})
+
+// Login function
+const onLogin = () => {
+  alert(formData.value.password)
 }
 
 // Form submit handler
 const onFormSubmit = () => {
   refVForm.value?.validate().then(({ valid }) => {
     if (valid) onSubmit()
+
+    if (valid) onLogin()
   })
 }
 </script>
@@ -68,15 +84,29 @@ const onFormSubmit = () => {
     <v-text-field
       v-model="formData.email"
       label="Email"
+
+  <v-form ref="refVForm" @submit.prevent="onFormSubmit">
+    <!-- Email Field -->
+
+    <v-text-field
+      v-model="formData.email"
+      label="Email"
+      variant="outlined"
+      density="compact"
       prepend-inner-icon="mdi-account"
       :rules="[requiredValidator, emailValidator]"
     ></v-text-field>
 
     <!-- Password Field -->
+
     <v-text-field
       v-model="formData.password"
       prepend-inner-icon="mdi-lock"
       label="Password"
+
+      variant="outlined"
+      density="compact"
+
       :type="isPasswordVisible ? 'text' : 'password'"
       :append-inner-icon="isPasswordVisible ? 'mdi-eye-off' : 'mdi-eye'"
       @click:append-inner="isPasswordVisible = !isPasswordVisible"
