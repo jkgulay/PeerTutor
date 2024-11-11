@@ -53,6 +53,16 @@ export const passwordValidator = (password) => {
 };
 
 
+  const regExp = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+-]).{8,}/;
+  const validPassword = regExp.test(password);
+
+  return (
+    validPassword ||
+    'Password must be 8+ characters with uppercase, lowercase, a number, and a special character.'
+  );
+};
+
+
 // 👉 Confirm Password Validator
 export const confirmedValidator = (value, target) =>
   value === target || 'The Confirm Password field confirmation does not match'

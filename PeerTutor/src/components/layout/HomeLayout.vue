@@ -1,22 +1,37 @@
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { supabase } from '@/utils/supabase'
 
+// Drawer state
 const drawer = ref(false)
 const toggleDrawer = () => {
   drawer.value = !drawer.value
 }
-</script>
 
-<script>
-export default {
-  data() {
-    return {
-      dialog: false
+// Dialog state for messages (not used directly for logout)
+const dialog = ref(false)
+
+// Use router for navigation after logout
+const router = useRouter()
+
+// Logout function
+const onLogout = async () => {
+  try {
+    const { error } = await supabase.auth.signOut()
+
+    if (error) {
+      console.error('Error during logout:', error.message)
+      return
     }
+
+    // After logout, redirect the user to the login page
+    router.replace({ name: 'login' }) // Always use replace to avoid adding a new history entry
+  } catch (error) {
+    console.error('Unexpected error during logout:', error)
   }
 }
 </script>
-
 <template>
   <v-responsive>
     <v-app>
@@ -87,8 +102,6 @@ export default {
                     <div class="text-body-2">Sure, what time works for you?</div>
                   </div>
                 </v-col>
-
-                <!-- Additional messages can be added here in similar format -->
               </v-row>
             </v-container>
           </v-card>
@@ -96,7 +109,7 @@ export default {
       </v-app-bar>
 
       <!-- Main Content Layout -->
-      <v-layout row class="">
+      <v-layout row>
         <v-navigation-drawer
           v-model="drawer"
           app
@@ -124,21 +137,16 @@ export default {
           <v-divider></v-divider>
 
           <v-list density="compact" nav>
-            <v-list-item prepend-icon="mdi-home"
-              ><RouterLink class="text-white text-decoration-none" to="/home"
-                >Home</RouterLink
-              ></v-list-item
-            >
-            <v-list-item prepend-icon="mdi-account-box"
-              ><RouterLink class="text-white text-decoration-none" to="/profile"
-                >Profile</RouterLink
-              ></v-list-item
-            >
-            <v-list-item prepend-icon="mdi-logout"
-              ><RouterLink class="text-white text-decoration-none" to="./"
-                >Logout</RouterLink
-              ></v-list-item
-            >
+            <v-list-item prepend-icon="mdi-home">
+              <RouterLink class="text-white text-decoration-none" to="/home">Home</RouterLink>
+            </v-list-item>
+            <v-list-item prepend-icon="mdi-account-box">
+              <RouterLink class="text-white text-decoration-none" to="/profile">Profile</RouterLink>
+            </v-list-item>
+            <!-- Logout Button -->
+            <v-list-item prepend-icon="mdi-logout" @click="onLogout">
+              <span class="text-white">Logout</span>
+            </v-list-item>
           </v-list>
         </v-navigation-drawer>
 
