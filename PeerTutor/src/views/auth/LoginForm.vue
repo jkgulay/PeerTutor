@@ -28,6 +28,7 @@ const refVForm = ref()
 const onSubmit = async () => {
   // Reset form action state
   formAction.value = { ...formActionDefault }
+
   // Turn on processing
   formAction.value.formProcess = true
 
@@ -39,15 +40,17 @@ const onSubmit = async () => {
 
   // Handle response
   if (error) {
-    formAction.value.formErrorMessage = error.message
+    formAction.value.formErrorMessage = error.message || 'An error occurred during login.'
     formAction.value.formStatus = error.status
+    console.error('Login error:', error) // Log the error for debugging
   } else if (data) {
-    formAction.value.formSuccessMessage = 'Successfully Logged In!' // Corrected spelling
+    formAction.value.formSuccessMessage = 'Successfully Logged In!'
     router.replace('/home') // Redirect to home
   }
 
   // Reset form
   refVForm.value?.reset()
+
   // Turn off processing
   formAction.value.formProcess = false
 }
@@ -65,10 +68,9 @@ const onFormSubmit = () => {
     :form-success-message="formAction.formSuccessMessage"
     :form-error-message="formAction.formErrorMessage"
   ></AlertNotification>
-
+  
   <v-form ref="refVForm" @submit.prevent="onFormSubmit">
     <!-- Email Field -->
-
     <v-text-field
       v-model="formData.email"
       label="Email"
@@ -77,9 +79,8 @@ const onFormSubmit = () => {
       prepend-inner-icon="mdi-account"
       :rules="[requiredValidator, emailValidator]"
     ></v-text-field>
-
+    
     <!-- Password Field -->
-
     <v-text-field
       v-model="formData.password"
       prepend-inner-icon="mdi-lock"
@@ -91,7 +92,7 @@ const onFormSubmit = () => {
       @click:append-inner="isPasswordVisible = !isPasswordVisible"
       :rules="[requiredValidator]"
     ></v-text-field>
-
+    
     <!-- Submit Button -->
     <v-container width="200">
       <v-btn

@@ -19,16 +19,17 @@ const router = useRouter()
 const onLogout = async () => {
   try {
     const { error } = await supabase.auth.signOut()
-
+    
     if (error) {
       console.error('Error during logout:', error.message)
+   
       return
     }
+    router.replace({ name: 'login' }) 
+  } catch (err) {
 
-    // After logout, redirect the user to the login page
-    router.replace({ name: 'login' }) // Always use replace to avoid adding a new history entry
-  } catch (error) {
-    console.error('Unexpected error during logout:', error)
+    console.error('Unexpected error during logout:', err)
+
   }
 }
 </script>

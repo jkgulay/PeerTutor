@@ -34,45 +34,60 @@ const isRepeatPasswordVisible = ref(false)
 // Reference to the form
 const refVForm = ref()
 
-// Function to handle form submission
 const onSubmit = async () => {
+  // Reset form action state
   formAction.value = { ...formActionDefault }
   formAction.value.formProcess = true
 
-  // Sign up with Supabase
-  const { data, error } = await supabase.auth.signUp({
-    email: formData.value.email,
-    password: formData.value.password,
-    options: {
-      data: {
-        firstname: formData.value.firstname,
-        lastname: formData.value.lastname,
-        role: formData.value.role,
-        occupation: formData.value.occupation
+  try {
+    // Sign up with Supabase
+    const { data, error } = await supabase.auth.signUp({
+      email: formData.value.email,
+      password: formData.value.password,
+      options: {
+        data: {
+          firstname: formData.value.firstname,
+          lastname: formData.value.lastname,
+          role: formData.value.role,
+          occupation: formData.value.occupation
+        }
       }
+    })
+
+    // Handle errors and success
+    if (error) {
+      console.error('Signup error:', error)
+      formAction.value.formErrorMessage = error.message || 'An error occurred. Please try again.'
+      formAction.value.formStatus = error.status
+    } else if (data) {
+      console.log('Signup successful:', data)
+      formAction.value.formSuccessMessage = 'Check your email to confirm registration!'
+      refVForm.value?.reset() // Reset the form
+      setTimeout(() => {
+        router.replace('/') // Redirect to home
+      }, 2000)
     }
-  })
-
-  // Handle errors and success
-  if (error) {
-    console.error(error)
-    formAction.value.formErrorMessage = error.message
-    formAction.value.formStatus = error.status
-  } else if (data) {
-    console.log(data)
-    formAction.value.formSuccessMessage = 'Successfully Registered!'
-    refVForm.value?.reset() // Reset the form
-    router.replace('/home') // Redirect to home
+  } catch (err) {
+    console.error('Unexpected error during signup:', err)
+    formAction.value.formErrorMessage = 'An unexpected error occurred. Please try again.'
+  } finally {
+    // Turn off processing
+    formAction.value.formProcess = false
   }
-
-  // Turn off processing
-  formAction.value.formProcess = false
 }
 
 // Function to validate and submit the form
 const onFormSubmit = () => {
   refVForm.value?.validate().then(({ valid }) => {
-    if (valid) onSubmit()
+    if (valid) {
+      onSubmit()
+    } else {
+      // Handle validation errors if needed
+      formAction.value.formErrorMessage = 'Please fix the validation errors.'
+    }
+  }).catch(err => {
+    console.error('Validation error:', err)
+    formAction.value.formErrorMessage = 'An error occurred while validating the form.'
   })
 }
 </script>
