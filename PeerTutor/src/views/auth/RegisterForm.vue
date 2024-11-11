@@ -105,17 +105,20 @@ const onSubmit = async () => {
 
 // Function to validate and submit the form
 const onFormSubmit = () => {
-  refVForm.value?.validate().then(({ valid }) => {
-    if (valid) {
-      onSubmit()
-    } else {
-      // Handle validation errors if needed
-      formAction.value.formErrorMessage = 'Please fix the validation errors.'
-    }
-  }).catch(err => {
-    console.error('Validation error:', err)
-    formAction.value.formErrorMessage = 'An error occurred while validating the form.'
-  })
+  refVForm.value
+    ?.validate()
+    .then(({ valid }) => {
+      if (valid) {
+        onSubmit()
+      } else {
+        // Handle validation errors if needed
+        formAction.value.formErrorMessage = 'Please fix the validation errors.'
+      }
+    })
+    .catch((err) => {
+      console.error('Validation error:', err)
+      formAction.value.formErrorMessage = 'An error occurred while validating the form.'
+    })
 }
 </script>
 
