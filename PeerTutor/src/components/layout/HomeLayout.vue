@@ -19,9 +19,10 @@ const router = useRouter()
 const onLogout = async () => {
   try {
     const { error } = await supabase.auth.signOut()
-
+    
     if (error) {
       console.error('Error during logout:', error.message)
+   
       return
     }
     router.replace({ name: 'login' })
