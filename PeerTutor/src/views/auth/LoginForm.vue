@@ -30,6 +30,7 @@ const onFormSubmit = () => {
     <v-text-field
       v-model="formData.email"
       label="Email"
+      variant="outlined"
       prepend-inner-icon="mdi-account"
       :rules="[requiredValidator, emailValidator]"
     ></v-text-field>
@@ -39,6 +40,7 @@ const onFormSubmit = () => {
       v-model="formData.password"
       prepend-inner-icon="mdi-lock"
       label="Password"
+      variant="outlined"
       :type="isPasswordVisible ? 'text' : 'password'"
       :append-inner-icon="isPasswordVisible ? 'mdi-eye-off' : 'mdi-eye'"
       @click:append-inner="isPasswordVisible = !isPasswordVisible"
