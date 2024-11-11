@@ -1,11 +1,11 @@
 <script setup>
 import AlertNotification from '@/components/common/AlertNotification.vue'
-
 import { supabase, formActionDefault } from '@/utils/supabase'
 import { ref } from 'vue'
 import { requiredValidator, emailValidator } from '@/utils/validators'
 import { useRouter } from 'vue-router'
 
+// Router instance
 const router = useRouter()
 
 // Default form data
@@ -13,66 +13,51 @@ const formDataDefault = {
   email: '',
   password: ''
 }
-const formData = ref({
-  ...formDataDefault
-})
-const formAction = ref({
-  ...formActionDefault
-})
 
+// Reactive form data and action state
+const formData = ref({ ...formDataDefault })
+const formAction = ref({ ...formActionDefault })
+
+// Password visibility state
 const isPasswordVisible = ref(false)
+
+// Reference to the form
 const refVForm = ref()
 
 // Login function
 const onSubmit = async () => {
-  //Reset Form Action utils
+  // Reset form action state
   formAction.value = { ...formActionDefault }
   // Turn on processing
   formAction.value.formProcess = true
 
+  // Attempt to sign in with Supabase
   const { data, error } = await supabase.auth.signInWithPassword({
     email: formData.value.email,
     password: formData.value.password
   })
 
+  // Handle response
   if (error) {
     formAction.value.formErrorMessage = error.message
     formAction.value.formStatus = error.status
   } else if (data) {
-    formAction.value.formSuccessMessage = 'Sucessfully Login!'
-    router.replace('/home')
+    formAction.value.formSuccessMessage = 'Successfully Logged In!' // Corrected spelling
+    router.replace('/home') // Redirect to home
   }
 
-  //Reset Form
+  // Reset form
   refVForm.value?.reset()
-
-  //Turn off processing
+  // Turn off processing
   formAction.value.formProcess = false
-
-
-const isPasswordVisible = ref(false)
-const refVForm = ref()
-
-// Default form data
-const formData = ref({
-  email: '',
-  password: ''
-})
-
-// Login function
-const onLogin = () => {
-  alert(formData.value.password)
 }
 
 // Form submit handler
 const onFormSubmit = () => {
   refVForm.value?.validate().then(({ valid }) => {
-    if (valid) onSubmit()
-
-    if (valid) onLogin()
+    if (valid) onSubmit() // Call onSubmit if the form is valid
   })
 }
-
 </script>
 
 <template>
@@ -94,7 +79,6 @@ const onFormSubmit = () => {
     ></v-text-field>
 
     <!-- Password Field -->
-
 
     <v-text-field
       v-model="formData.password"
