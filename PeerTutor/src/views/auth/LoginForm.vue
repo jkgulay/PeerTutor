@@ -1,61 +1,53 @@
 <script setup>
 import { ref } from 'vue'
-import { useField, useForm } from 'vee-validate'
+import { requiredValidator, emailValidator } from '@/utils/validators'
 
-const { handleSubmit } = useForm({
-  validationSchema: {
-    password(value) {
-      return /^[0-9-]{7,}$/.test(value) || 'Password needs to be at least 7 digits.'
-    },
-    email(value) {
-      return /^[a-z.-]+@[a-z.-]+\.[a-z]+$/i.test(value) || 'Must be a valid e-mail.'
-    }
-  }
+const isPasswordVisible = ref(false)
+const refVForm = ref()
+
+// Default form data
+const formData = ref({
+  email: '',
+  password: ''
 })
 
-// Form fields
-const visible = ref(false)
-const password = useField('password')
-const email = useField('email')
-const loading = ref(false)
-const submit = handleSubmit((values) => {
-  alert(JSON.stringify(values, null, 2))
-})
+// Login function
+const onLogin = () => {
+  alert(formData.value.password)
+}
+
+// Form submit handler
+const onFormSubmit = () => {
+  refVForm.value?.validate().then(({ valid }) => {
+    if (valid) onLogin()
+  })
+}
 </script>
 
 <template>
-  <v-form @submit.prevent="submit" fast-fail>
+  <v-form ref="refVForm" @submit.prevent="onFormSubmit">
+    <!-- Email Field -->
     <v-text-field
-      class="mx-3 my-2"
-      variant="outlined"
-      prepend-inner-icon="mdi-account"
-      density="compact"
-      :error-messages="email.errorMessage"
-      placeholder="user@gmail.com"
+      v-model="formData.email"
       label="Email"
-      hide-details="auto"
-      clearable
+      prepend-inner-icon="mdi-account"
+      :rules="[requiredValidator, emailValidator]"
     ></v-text-field>
 
+    <!-- Password Field -->
     <v-text-field
-      class="mx-3 my-2"
-      density="compact"
-      variant="outlined"
+      v-model="formData.password"
       prepend-inner-icon="mdi-lock"
-      :append-inner-icon="visible ? 'mdi-eye-off' : 'mdi-eye'"
-      :type="visible ? 'text' : 'password'"
-      @click:append-inner="visible = !visible"
-      :error-messages="password.errorMessage"
       label="Password"
-      placeholder="Enter your password"
-      hide-details="auto"
-      clearable
+      :type="isPasswordVisible ? 'text' : 'password'"
+      :append-inner-icon="isPasswordVisible ? 'mdi-eye-off' : 'mdi-eye'"
+      @click:append-inner="isPasswordVisible = !isPasswordVisible"
+      :rules="[requiredValidator]"
     ></v-text-field>
 
+    <!-- Submit Button -->
     <v-container width="200">
       <v-btn
-        class=""
-        :loading="loading"
         color="teal-darken-2"
         size="large"
         type="submit"
@@ -63,10 +55,9 @@ const submit = handleSubmit((values) => {
         block
         elevation="10"
         style="border-radius: 30px"
-        href="./home"
       >
-        <span style="color: #80cbc4">Sign In</span>
-      </v-btn></v-container
-    >
+        Sign In
+      </v-btn>
+    </v-container>
   </v-form>
 </template>

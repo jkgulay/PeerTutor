@@ -2,10 +2,35 @@
 import { ref } from 'vue'
 import HomeLayout from '@/components/layout/HomeLayout.vue'
 
-// Ref variables
 const username = ref('Christ Charl Gabales')
 const jobTitle = ref('Software Engineer')
 const location = ref('Butuan City, Philippines')
+
+const items = ref(['Student', 'Tutor'])
+</script>
+
+<script>
+export default {
+  data() {
+    return {
+      dialog: false,
+      toggle_one: false
+    }
+  },
+  computed: {
+    buttonStyle() {
+      return {
+        backgroundColor: this.toggle_one ? '#2E7D32' : 'gray',
+        color: 'white'
+      }
+    }
+  },
+  methods: {
+    toggleAvailability() {
+      this.toggle_one = !this.toggle_one
+    }
+  }
+}
 </script>
 
 <template>
@@ -14,11 +39,14 @@ const location = ref('Butuan City, Philippines')
       <v-container class="profile-container d-flex justify-center pa-0">
         <v-card max-width="900" class="profile-card">
           <!-- Profile Header with background image and profile info -->
-          <v-img src="/public/cover.jpg" class="background-img" height="250px" cover></v-img>
+          <v-img src="/cover.jpg" class="background-img" height="250px" cover></v-img>
 
           <v-container class="profile-header">
             <v-avatar class="profile-img" size="140">
-              <v-img src="/public/profile.jpg" alt="Profile Image"></v-img>
+              <v-img
+                src="https://randomuser.me/api/portraits/men/91.jpg"
+                alt="Profile Image"
+              ></v-img>
             </v-avatar>
             <div class="profile-info">
               <h2 class="profile-name">{{ username }}</h2>
@@ -32,10 +60,96 @@ const location = ref('Butuan City, Philippines')
             <!-- Profile Settings Buttons -->
             <v-row class="profile-settings mb-4" justify="center">
               <v-col cols="12" md="5" class="mb-2">
-                <v-btn block color="#80cbc4" rounded large elevation="2"> Edit Profile </v-btn>
+                <!-- Dialog Trigger Button -->
+                <v-btn
+                  block
+                  color="#80cbc4"
+                  rounded
+                  large
+                  elevation="2"
+                  class="text-none font-weight-regular"
+                  prepend-icon="mdi-account"
+                  text
+                  @click="dialog = true"
+                >
+                  Edit Profile
+                </v-btn>
+
+                <!-- Dialog Component -->
+                <v-dialog v-model="dialog" max-width="550">
+                  <v-card>
+                    <v-card-title class="text-center">
+                      <v-icon class="mr-2">mdi-account</v-icon>
+                      User Profile
+                    </v-card-title>
+
+                    <v-card-text>
+                      <v-row dense class="d-flex justify-center">
+                        <v-col cols="12" md="4" sm="6">
+                          <v-text-field
+                            label="First name"
+                            required
+                            variant="outlined"
+                            prepend-inner-icon="mdi-badge-account-outline"
+                            placeholder="First Name"
+                            hide-details="auto"
+                            clearable
+                          ></v-text-field>
+                        </v-col>
+
+                        <v-col cols="12" md="4" sm="6">
+                          <v-text-field
+                            label="Last name"
+                            persistent-hint
+                            required
+                            variant="outlined"
+                            placeholder="Last Name"
+                            hide-details="auto"
+                            clearable
+                          ></v-text-field>
+                        </v-col>
+                      </v-row>
+                      <v-row dense class="d-flex justify-center">
+                        <v-col cols="12" md="5" sm="6">
+                          <v-text-field
+                            label="Email"
+                            required
+                            variant="outlined"
+                            prepend-inner-icon="mdi-email"
+                            placeholder="user@gmail.com"
+                            hide-details="auto"
+                            clearable
+                          ></v-text-field>
+                        </v-col>
+                        <v-col cols="12" sm="3">
+                          <v-select label="Role" :items="items" variant="outlined"></v-select>
+                        </v-col>
+                      </v-row>
+
+                      <v-row dense class="d-flex"> </v-row>
+                    </v-card-text>
+
+                    <v-divider></v-divider>
+
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <v-btn text @click="dialog = false">Close</v-btn>
+                      <v-btn color="primary" @click="dialog = false">Save</v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
               </v-col>
               <v-col cols="12" md="5" class="mb-2">
-                <v-btn block outlined rounded large> Settings </v-btn>
+                <v-btn
+                  block
+                  outlined
+                  rounded
+                  large
+                  :style="buttonStyle"
+                  @click="toggleAvailability"
+                >
+                  {{ toggle_one ? 'Available' : 'Not Available' }}
+                </v-btn>
               </v-col>
             </v-row>
 
