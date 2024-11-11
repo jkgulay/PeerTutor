@@ -8,6 +8,9 @@ import {
 import { ref } from 'vue'
 import AlertNotification from '@/components/common/AlertNotification.vue'
 import { supabase, formActionDefault } from '@/utils/supabase'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const formDataDefault = {
   firstname: '',
@@ -41,6 +44,7 @@ const onSubmit = async () => {
       data: {
         firstname: formData.value.firstname,
         lastname: formData.value.lastname,
+        is_admin: false,
         role: formData.value.role,
         occupation: formData.value.occupation
       }
@@ -53,8 +57,12 @@ const onSubmit = async () => {
   } else if (data) {
     console.log(data)
     formAction.value.formSuccessMessage = 'Sucessfully Registered!'
-    refVForm.value?.reset()
+    router.replace('/home')
   }
+  //Reset Form
+  refVForm.value?.reset()
+
+  //Turn off processing
   formAction.value.formProcess = false
 }
 
