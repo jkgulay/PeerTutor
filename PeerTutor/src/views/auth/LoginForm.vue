@@ -27,20 +27,24 @@ const onFormSubmit = () => {
 <template>
   <v-form ref="refVForm" @submit.prevent="onFormSubmit">
     <!-- Email Field -->
+
     <v-text-field
       v-model="formData.email"
       label="Email"
       variant="outlined"
+      density="compact"
       prepend-inner-icon="mdi-account"
       :rules="[requiredValidator, emailValidator]"
     ></v-text-field>
 
     <!-- Password Field -->
+
     <v-text-field
       v-model="formData.password"
       prepend-inner-icon="mdi-lock"
       label="Password"
       variant="outlined"
+      density="compact"
       :type="isPasswordVisible ? 'text' : 'password'"
       :append-inner-icon="isPasswordVisible ? 'mdi-eye-off' : 'mdi-eye'"
       @click:append-inner="isPasswordVisible = !isPasswordVisible"

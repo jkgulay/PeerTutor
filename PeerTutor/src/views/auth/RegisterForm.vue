@@ -179,8 +179,7 @@ const onFormSubmit = () => {
   </v-row>
 
   <!-- Submit Button -->
-  <v-row align="center" justify="center">
-    <v-col cols="12" md="6" class="d-flex justify-center mb-2">
+  <v-container width="200">
       <v-btn
         color="teal-darken-2"
         size="large"
@@ -189,13 +188,10 @@ const onFormSubmit = () => {
         block
         elevation="10"
         style="border-radius: 30px"
-        :disabled="formAction.formProcess"
-        :loading="formAction.formProcess"
       >
-        <span style="color: white">Create</span>
+        Create
       </v-btn>
-    </v-col>
-  </v-row>
+    </v-container>
 </v-form>
 
 </template>
