@@ -5,7 +5,7 @@
 
 <template>
   <v-responsive>
-    <v-app :theme="theme">
+    <v-app>
       <v-app-bar
         style="background: linear-gradient(#05161a, #072e33)"
         elevation="8"
