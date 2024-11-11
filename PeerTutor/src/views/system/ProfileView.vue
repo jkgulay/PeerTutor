@@ -15,6 +15,21 @@ export default {
     return {
       dialog: false,
       toggle_one: false
+    }
+  },
+  computed: {
+    buttonStyle() {
+      return {
+        backgroundColor: this.toggle_one ? '#2E7D32' : 'gray',
+        color: 'white'
+      }
+    }
+  },
+  methods: {
+    toggleAvailability() {
+      this.toggle_one = !this.toggle_one
+      dialog: false,
+      toggle_one: false
     };
   },
   computed: {

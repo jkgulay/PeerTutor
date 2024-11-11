@@ -17,6 +17,16 @@ export default {
 }
 </script>
 
+<script>
+export default {
+  data() {
+    return {
+      dialog: false
+    }
+  }
+}
+</script>
+
 <template>
   <v-responsive>
     <v-app :theme="theme">
@@ -90,6 +100,41 @@ export default {
             </v-container>
           </v-card>
         </v-dialog>
+        <v-dialog v-model="dialog" max-width="550">
+          <v-card>
+            <!-- Messages Box Section -->
+            <v-divider class="mx-4 mb-2"></v-divider>
+            <v-card-title>Messages</v-card-title>
+            <v-container>
+              <v-row class="d-flex flex-column">
+                <v-col cols="12" class="d-flex align-center mb-2">
+                  <v-avatar size="32">
+                    <img src="https://randomuser.me/api/portraits/men/5.jpg" alt="Sender Profile" />
+                  </v-avatar>
+                  <div class="ms-2">
+                    <div class="text-h6">Sender Name</div>
+                    <div class="text-body-2">Hey, I'd like to schedule a session!</div>
+                  </div>
+                </v-col>
+
+                <v-col cols="12" class="d-flex align-center mb-2">
+                  <v-avatar size="32">
+                    <img
+                      src="https://randomuser.me/api/portraits/men/1.jpg"
+                      alt="Receiver Profile"
+                    />
+                  </v-avatar>
+                  <div class="ms-2">
+                    <div class="text-h6">Receiver Name</div>
+                    <div class="text-body-2">Sure, what time works for you?</div>
+                  </div>
+                </v-col>
+
+                <!-- Additional messages can be added here in similar format -->
+              </v-row>
+            </v-container>
+          </v-card>
+        </v-dialog>
       </v-app-bar>
 
       <!-- Main Content Layout -->
@@ -148,7 +193,7 @@ export default {
       </v-layout>
 
       <!-- Footer -->
-      <v-footer style="background: linear-gradient(#072e33, #05161a)"  class="d-flex" padless >
+      <v-footer style="background: linear-gradient(#072e33, #05161a)" class="d-flex" padless>
         <v-row justify="center" no-gutters>
           <v-col class="text-center mt-4" cols="12" style="color: #26a69a">
             {{ new Date().getFullYear() }} — <strong>Kayel</strong>
