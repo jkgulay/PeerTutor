@@ -1,36 +1,96 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import HomeLayout from '@/components/layout/HomeLayout.vue'
+import { useRouter } from 'vue-router'
+import { supabase } from '@/utils/supabase'
 
-const username = ref('Christ Charl Gabales')
-const jobTitle = ref('Software Engineer')
-const location = ref('Butuan City, Philippines')
+const dialog = ref(false)
+const router = useRouter()
 
-const items = ref(['Student', 'Tutor'])
-</script>
+const userProfile = ref({
+  user_id: '',
+  firstname: '',
+  lastname: '',
+  email: '',
+  avatar: 'https://randomuser.me/api/portraits/lego/1.jpg', // Default avatar
+  role: '',
+  bio: '',
+  expertise: '',
+  availability: false
+})
 
-<script>
-export default {
-  data() {
-    return {
-      dialog: false,
-      toggle_one: false
-    }
-  },
-  computed: {
-    buttonStyle() {
-      return {
-        backgroundColor: this.toggle_one ? '#2E7D32' : 'gray',
-        color: 'white'
-      }
-    }
-  },
-  methods: {
-    toggleAvailability() {
-      this.toggle_one = !this.toggle_one
-    }
+const toggleAvailability = async () => {
+  // Toggle local availability state
+  userProfile.value.availability = !userProfile.value.availability;
+
+  const { error } = await supabase
+    .from('users') // Replace with your actual table name
+    .update({ availability: userProfile.value.availability })
+    .eq('user_id', userProfile.value.user_id); // Use userProfile.value.user_id directly
+
+  if (error) {
+    console.error('Error updating availability:', error);
+
+    // Revert the availability state if there was an error
+    userProfile.value.availability = !userProfile.value.availability;
+  } else {
+    console.log('Availability updated successfully');
   }
 }
+
+const fetchUserProfile = async () => {
+  try {
+    // Fetch the authenticated user
+    const {
+      data: { user },
+      error: authError
+    } = await supabase.auth.getUser ()
+    if (authError) {
+      console.error('Error fetching authenticated user:', authError)
+      return
+    }
+
+    if (!user || !user.id) {
+      console.error('No authenticated user found or user ID is undefined.')
+      router.replace({ name: 'login' })
+      return
+    }
+
+    console.log('Authenticated user:', user)
+
+    // Fetch the user profile from the database
+    const { data, error: profileError } = await supabase
+      .from('users')
+      .select(
+        'user_id, firstname, lastname, email, avatar, occupation, role, bio, expertise, availability'
+      )
+      .eq('user_id', user.id)
+      .single()
+
+    if (profileError) {
+      console.error('Error fetching user profile:', profileError)
+    } else if (data) {
+      userProfile.value = {
+        user_id: data.user_id,
+        firstname: data.firstname || '',
+        lastname: data.lastname || '',
+        email: data.email || '',
+        avatar: data.avatar || 'https://randomuser.me/api/portraits/lego/1.jpg', // Default avatar
+        role: data.role || '',
+        occupation: data.occupation || '',
+        bio: data.bio || '',
+        expertise: data.expertise || '',
+        availability: data.availability || false // Ensure availability is a boolean
+      }
+    }
+  } catch (err) {
+    console.error('Unexpected error:', err)
+  }
+}
+
+onMounted(() => {
+  fetchUserProfile()
+})
 </script>
 
 <template>
@@ -43,21 +103,23 @@ export default {
 
           <v-container class="profile-header">
             <v-avatar class="profile-img" size="140">
-              <v-img
-                src="https://randomuser.me/api/portraits/men/91.jpg"
-                alt="Profile Image"
-              ></v-img>
+              <v-img :src="userProfile.avatar" alt="Profile Image"></v-img>
             </v-avatar>
             <div class="profile-info">
-              <h2 class="profile-name">{{ username }}</h2>
-              <p class="profile-job">{{ jobTitle }}</p>
-              <p class="profile-location">{{ location }}</p>
+              <h2 class="profile-name">
+                {{
+                  userProfile.firstname
+                    ? `${userProfile.firstname} ${userProfile.lastname}`
+                    : 'Anonymous User'
+                }}
+              </h2>
+              <h3 class="profile-job">{{ userProfile.occupation || 'Role' }}</h3>
+              <p class="profile-bio">{{ userProfile.bio || 'No Bio' }}</p>
             </div>
           </v-container>
 
           <!-- Profile Details -->
           <v-card-text class="profile-details pa-4">
-            <!-- Profile Settings Buttons -->
             <v-row class="profile-settings mb-4" justify="center">
               <v-col cols="12" md="5" class="mb-2">
                 <!-- Dialog Trigger Button -->
@@ -85,9 +147,10 @@ export default {
 
                     <v-card-text>
                       <v-row dense class="d-flex justify-center">
-                        <v-col cols="12" md="4" sm="6">
+                        <v-col cols="12" md="6 " sm="6">
                           <v-text-field
                             label="First name"
+                            v-model="userProfile.firstname"
                             required
                             variant="outlined"
                             prepend-inner-icon="mdi-badge-account-outline"
@@ -97,10 +160,10 @@ export default {
                           ></v-text-field>
                         </v-col>
 
-                        <v-col cols="12" md="4" sm="6">
+                        <v-col cols="12" md="6" sm="6">
                           <v-text-field
                             label="Last name"
-                            persistent-hint
+                            v-model="userProfile.lastname"
                             required
                             variant="outlined"
                             placeholder="Last Name"
@@ -110,9 +173,10 @@ export default {
                         </v-col>
                       </v-row>
                       <v-row dense class="d-flex justify-center">
-                        <v-col cols="12" md="5" sm="6">
+                        <v-col cols="12" md="6" sm="6">
                           <v-text-field
                             label="Email"
+                            v-model="userProfile.email"
                             required
                             variant="outlined"
                             prepend-inner-icon="mdi-email"
@@ -121,12 +185,15 @@ export default {
                             clearable
                           ></v-text-field>
                         </v-col>
-                        <v-col cols="12" sm="3">
-                          <v-select label="Role" :items="items" variant="outlined"></v-select>
+                        <v-col cols="12" md="6" sm="6">
+                          <v-select
+                            label="Role"
+                            v-model="userProfile.role"
+                            :items="['Tutor ', 'Student']"
+                            variant="outlined"
+                          ></v-select>
                         </v-col>
                       </v-row>
-
-                      <v-row dense class="d-flex"> </v-row>
                     </v-card-text>
 
                     <v-divider></v-divider>
@@ -134,7 +201,7 @@ export default {
                     <v-card-actions>
                       <v-spacer></v-spacer>
                       <v-btn text @click="dialog = false">Close</v-btn>
-                      <v-btn color="primary" @click="dialog = false">Save</v-btn>
+                      <v-btn color="primary" @click="saveProfile">Save</v-btn>
                     </v-card-actions>
                   </v-card>
                 </v-dialog>
@@ -148,7 +215,7 @@ export default {
                   :style="buttonStyle"
                   @click="toggleAvailability"
                 >
-                  {{ toggle_one ? 'Available' : 'Not Available' }}
+                  {{ userProfile.availability ? 'Available' : 'Not Available' }}
                 </v-btn>
               </v-col>
             </v-row>
@@ -157,7 +224,7 @@ export default {
             <v-divider></v-divider>
             <v-row class="skills mt-4">
               <v-col>
-                <h4 class="mb-3">Tech Stack</h4>
+                <h4 class="mb-3">Subjects</h4>
                 <v-chip-group column>
                   <v-chip class="ma-1" color="primary" text-color="white"> Javascript </v-chip>
                   <v-chip class="ma-1" color="primary" text-color="white"> CSS </v-chip>
@@ -241,7 +308,7 @@ export default {
   color: #757575;
 }
 
-.profile-location {
+.profile-bio {
   font-size: 16px;
   color: #9e9e9e;
 }
