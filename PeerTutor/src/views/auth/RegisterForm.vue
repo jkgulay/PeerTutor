@@ -28,20 +28,15 @@ const formDataDefault = {
 const formData = ref({ ...formDataDefault })
 const formAction = ref({ ...formActionDefault })
 
-
-// Password visibility states
 // Password visibility states
 const isPasswordVisible = ref(false)
 const isRepeatPasswordVisible = ref(false)
-
-// Reference to the form
 
 // Reference to the form
 const refVForm = ref()
 
 // Main submission function
 const onSubmit = async () => {
-  // Reset form action state
   // Reset form action state
   formAction.value = { ...formActionDefault }
   formAction.value.formProcess = true
@@ -64,27 +59,26 @@ const onSubmit = async () => {
     // Handle errors and success
     if (signupError) {
       console.error('Signup error:', signupError)
-      formAction.value.formErrorMessage = signupError.message || 'An error occurred. Please try again.'
+      formAction.value.formErrorMessage =
+        signupError.message || 'An error occurred. Please try again.'
       formAction.value.formStatus = signupError.status
     } else if (signupData) {
-      // Determine the target table based on the role
-      const tableName = formData.value.role === 'Student' ? 'students' : 'tutors'
 
-      // Insert user profile data into the appropriate table
-      const { error: profileError } = await supabase
-        .from(tableName)
-        .insert([{
-          user_id: signupData.user.id,  // Link to Auth ID
+      const { error: profileError } = await supabase.from('users').insert([
+        {
+          user_id: signupData.user.id, 
           firstname: formData.value.firstname,
-          email: formData.value.email,
           lastname: formData.value.lastname,
+          email: formData.value.email,
           occupation: formData.value.occupation,
-          role: formData.value.role
-        }])
+          role: formData.value.role 
+        }
+      ])
 
       if (profileError) {
         console.error('Profile insertion error:', profileError)
-        formAction.value.formErrorMessage = profileError.message || 'An error occurred while creating the profile.'
+        formAction.value.formErrorMessage =
+          profileError.message || 'An error occurred while creating the profile.'
       } else {
         console.log('Sign Up successful:', signupData)
         formAction.value.formSuccessMessage = 'Check your email to confirm registration!'
@@ -122,15 +116,13 @@ const onFormSubmit = () => {
 }
 </script>
 
-
 <template>
   <AlertNotification
     :form-success-message="formAction.formSuccessMessage"
     :form-error-message="formAction.formErrorMessage"
   ></AlertNotification>
-  
-  
-  <v-form ref="refVForm" @submit.prevent="onFormSubmit">
+
+  <v-form class="mt-5" ref="refVForm" @submit.prevent="onFormSubmit">
     <!-- Name Fields -->
     <v-row class="d-flex mx-auto" align="center" justify="center">
       <v-col cols="12" md="6">
@@ -158,7 +150,6 @@ const onFormSubmit = () => {
       </v-col>
     </v-row>
 
-  
     <!-- Contact Information Field -->
     <v-row class="d-flex mx-auto" align="center" justify="center">
       <v-col cols="12">
@@ -191,8 +182,6 @@ const onFormSubmit = () => {
         ></v-text-field>
       </v-col>
 
-
-    
       <v-col cols="12" md="6">
         <v-text-field
           v-model="formData.repeatPassword"
