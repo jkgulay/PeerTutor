@@ -10,8 +10,11 @@ const fetchTutors = async () => {
   loading.value = true
   const { data, error } = await supabase
     .from('users')
-    .select('user_id, firstname, lastname, email, avatar, occupation, bio, role, rating, social_links1, social_links2')
+    .select(
+      'user_id, firstname, lastname, email, avatar, occupation, bio, role, rating, social_links1, social_links2, availability'
+    )
     .eq('role', 'Tutor')
+    .eq('availability', true)
 
   if (error) {
     console.error('Error fetching tutors:', error)
@@ -22,7 +25,7 @@ const fetchTutors = async () => {
 }
 const openLink = (url) => {
   if (url) {
-    window.open(url, '_blank') 
+    window.open(url, '_blank')
   }
 }
 
