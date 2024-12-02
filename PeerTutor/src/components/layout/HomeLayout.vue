@@ -9,70 +9,82 @@ const toggleDrawer = () => {
   drawer.value = !drawer.value
 }
 
-// Dialog state for messages (not used directly for logout)
 const dialog = ref(false)
-
-// Use router for navigation after logout
 const router = useRouter()
 
 // Logout function
 const onLogout = async () => {
   try {
     const { error } = await supabase.auth.signOut()
-    
     if (error) {
       console.error('Error during logout:', error.message)
-   
       return
     }
-    router.replace({ name: 'login' })
+    router.replace({ name: 'login' }) // Redirect to login after logout
   } catch (err) {
     console.error('Unexpected error during logout:', err)
   }
 }
 
+// User profile reactive state
 const userProfile = ref({
   firstname: '',
   lastname: '',
   email: '',
-  avatar: ''
+  avatar: '',
+  role: '',
+  bio: '',
+  expertise: '',
+  availability: ''
 })
 
 const fetchUserProfile = async () => {
-  const { data: user, error } = await supabase.auth.getUser()
+  try {
+    const { data: user, error: authError } = await supabase.auth.getUser()
+    if (authError) {
+      console.error('Error fetching authenticated user:', authError)
+      return
+    }
 
-  if (error) {
-    console.error('Error fetching user:', error)
-    return
-  }
+    if (!user) {
+      console.error('No authenticated user found. Redirecting to login.')
+      router.replace({ name: 'login' }) // Redirect to login if no user is logged in
+      return
+    }
 
-  if (user) {
-    const role = user.user_metadata?.role || 'Student'
-    const tableName = role === 'Tutor' ? 'tutors' : 'students'
+    console.log('Authenticated user:', user)
 
-    const { data, error } = await supabase
-      .from(tableName)
-      .select('firstname, lastname, email, avatar') // Adjust fields based on your table structure
-      .eq('id', user.id)
-      .single() // Get a single record
+    const { data, error: profileError } = await supabase
+      .from('users')
+      .select('firstname, lastname, email, avatar, role, bio, expertise, availability')
+      .eq('user_id', user.id) // Match user ID
+      .single()
 
-    if (error) {
-      console.error('Error fetching user profile:', error)
+    if (profileError) {
+      console.error('Error fetching user profile:', profileError)
     } else if (data) {
       userProfile.value = {
-        firstname: data.firstname,
-        lastname: data.lastname,
-        email: data.email,
-        avatar: data.avatar || 'https://randomuser.me/api/portraits/men/91.jpg' // Default avatar if none exists
+        firstname: data.firstname || '',
+        lastname: data.lastname || '',
+        email: data.email || '',
+        avatar: data.avatar || 'https://randomuser.me/api/portraits/men/91.jpg', // Default avatar
+        role: data.role || '',
+        bio: data.bio || '',
+        expertise: data.expertise || '',
+        availability: data.availability || ''
       }
     }
+  } catch (err) {
+    console.error('Unexpected error:', err)
   }
 }
 
+// Fetch user profile on component mount
 onMounted(() => {
   fetchUserProfile()
 })
 </script>
+
 
 <template>
   <v-responsive>
@@ -170,9 +182,15 @@ onMounted(() => {
         >
           <v-list>
             <v-list-item
-              :prepend-avatar="userProfile.avatar"
-              :title="`${userProfile.firstname} ${userProfile.lastname}`"
-              :subtitle="userProfile.email"
+              :prepend-avatar="
+                userProfile.avatar || 'https://randomuser.me/api/portraits/men/91.jpg'
+              "
+              :title="
+                userProfile.firstname
+                  ? `${userProfile.firstname} ${userProfile.lastname}`
+                  : 'Anonymous User'
+              "
+              :subtitle="userProfile.email || 'No email provided'"
             ></v-list-item>
           </v-list>
 

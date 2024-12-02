@@ -40,7 +40,7 @@ export default {
     <template #content>
       <v-container fluid>
         <v-row class="py-10"
-          ><v-col cols="12" md="6" class="d-flex mx-auto">
+          ><v-col cols="12" md="6" class="d-flex mx-auto ">
             <v-card color="#05161a" style="border-radius: 20px">
               <!-- Tutor Information and Social Media Icons -->
               <v-row class="mx-2 mt-2" align="center">
