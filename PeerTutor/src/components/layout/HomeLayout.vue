@@ -10,8 +10,6 @@ const toggleDrawer = () => {
 }
 
 const dialog = ref(false)
-
-// Use router for navigation after logout
 const router = useRouter()
 
 // Logout function
