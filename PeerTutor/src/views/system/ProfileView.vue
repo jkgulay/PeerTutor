@@ -16,25 +16,57 @@ const userProfile = ref({
   role: '',
   bio: '',
   expertise: '',
+  social_links1: '',
+  social_links2: '',
   availability: false
+
 })
 
 const toggleAvailability = async () => {
   // Toggle local availability state
-  userProfile.value.availability = !userProfile.value.availability;
+  userProfile.value.availability = !userProfile.value.availability
 
   const { error } = await supabase
     .from('users') // Replace with your actual table name
     .update({ availability: userProfile.value.availability })
-    .eq('user_id', userProfile.value.user_id); // Use userProfile.value.user_id directly
+    .eq('user_id', userProfile.value.user_id) // Use userProfile.value.user_id directly
 
   if (error) {
-    console.error('Error updating availability:', error);
+    console.error('Error updating availability:', error)
 
     // Revert the availability state if there was an error
-    userProfile.value.availability = !userProfile.value.availability;
+    userProfile.value.availability = !userProfile.value.availability
   } else {
-    console.log('Availability updated successfully');
+    console.log('Availability updated successfully')
+  }
+}
+const saveProfile = async () => {
+  try {
+    const { error } = await supabase
+      .from('users')
+      .update({
+        firstname: userProfile.value.firstname,
+        lastname: userProfile.value.lastname,
+        email: userProfile.value.email,
+        role: userProfile.value.role,
+        bio: userProfile.value.bio,
+        occupation: userProfile.value.occupation,
+        availability: userProfile.value.availability,
+        social_links1: userProfile.value.social_links1,
+        social_links2:userProfile.value.social_links2
+      })
+      .eq('user_id', userProfile.value.user_id)
+
+    if (error) {
+      console.error('Error updating profile:', error)
+      // Optionally show a notification to the user
+    } else {
+      console.log('Profile updated successfully')
+
+      dialog.value = false
+    }
+  } catch (err) {
+    console.error('Unexpected error:', err)
   }
 }
 
@@ -44,7 +76,7 @@ const fetchUserProfile = async () => {
     const {
       data: { user },
       error: authError
-    } = await supabase.auth.getUser ()
+    } = await supabase.auth.getUser()
     if (authError) {
       console.error('Error fetching authenticated user:', authError)
       return
@@ -62,7 +94,7 @@ const fetchUserProfile = async () => {
     const { data, error: profileError } = await supabase
       .from('users')
       .select(
-        'user_id, firstname, lastname, email, avatar, occupation, role, bio, expertise, availability'
+        'user_id, firstname, lastname, email, avatar, occupation, role, bio, expertise, availability, social_links1, social_links2'
       )
       .eq('user_id', user.id)
       .single()
@@ -75,11 +107,13 @@ const fetchUserProfile = async () => {
         firstname: data.firstname || '',
         lastname: data.lastname || '',
         email: data.email || '',
-        avatar: data.avatar || 'https://randomuser.me/api/portraits/lego/1.jpg', // Default avatar
+        avatar: data.avatar || 'https://randomuser.me/api/portraits/lego/1.jpg', 
         role: data.role || '',
         occupation: data.occupation || '',
         bio: data.bio || '',
         expertise: data.expertise || '',
+        social_links1: data.social_links1 || '',
+        social_links2: data.social_links2 || '',
         availability: data.availability || false // Ensure availability is a boolean
       }
     }
@@ -191,9 +225,93 @@ onMounted(() => {
                             v-model="userProfile.role"
                             :items="['Tutor ', 'Student']"
                             variant="outlined"
+                            hide-details="auto"
+                            clearable
                           ></v-select>
                         </v-col>
                       </v-row>
+                      <v-row dense class="d-flex justify-center">
+                        <v-col cols="12" md="6" sm="6">
+                          <v-file-input
+                            :rules="rules"
+                            accept="image/png, image/jpeg, image/bmp"
+                            label="Avatar"
+                            placeholder="Pick an avatar"
+                            prepend-icon="mdi-camera"
+                            variant="outlined"
+                            hide-details="auto"
+                          ></v-file-input>
+                        </v-col>
+                        <v-col cols="12" md="6" sm="6">
+                          <v-select
+                            label="Occupation"
+                            v-model="userProfile.occupation"
+                            :items="[
+                              'Teacher',
+                              'Tutor',
+                              'Student',
+                              'Professor',
+                              'Online Instructor',
+                              'Education Consultant',
+                              'School Administrator',
+                              'Curriculum Developer',
+                              'Learning Facilitator',
+                              'Private Tutor',
+                              'Training Specialist',
+                              'Subject Matter Expert',
+                              'Mentor',
+                              'Coach',
+                              'Librarian',
+                              'Research Assistant',
+                              'Guidance Counselor',
+                              'Special Education Teacher',
+                              'Vocational Trainer',
+                              'Child Care Worker',
+                              'Other'
+                            ]"
+                            variant="outlined"
+                            hide-details="auto"
+                          ></v-select>
+                        </v-col>
+                      </v-row>
+                      <v-row dense class="d-flex justify-center">
+                        <v-col cols="12" md="6 " sm="6">
+                          <v-text-field
+                            label="Facebook Link"
+                            v-model="userProfile.social_links1"
+                            required
+                            variant="outlined"
+                            prepend-inner-icon="mdi-facebook"
+                            placeholder="Facebook"
+                            hide-details="auto"
+                            clearable
+                          ></v-text-field>
+                        </v-col>
+
+                        <v-col cols="12" md="6" sm="6">
+                          <v-text-field
+                            label="LinkedIn Link"
+                            v-model="userProfile.social_links2"
+                            prepend-inner-icon="mdi-linkedin"
+                            required
+                            variant="outlined"
+                            placeholder="LinkedIn"
+                           
+                            clearable
+                          ></v-text-field>
+                        </v-col>
+                      </v-row>
+                      <v-row dense class="d-flex justify-center">
+                        <v-textarea
+                          v-model="userProfile.bio"
+                          label="Bio"
+                          maxlength="120"
+                          variant="outlined"
+                          hide-details="auto"
+                          clearable
+                        ></v-textarea>
+                      </v-row>
+                      <v-row dense class="d-flex justify-center"> </v-row>
                     </v-card-text>
 
                     <v-divider></v-divider>
@@ -224,7 +342,7 @@ onMounted(() => {
             <v-divider></v-divider>
             <v-row class="skills mt-4">
               <v-col>
-                <h4 class="mb-3">Subjects</h4>
+                <h4 class="mb-3">Expertise</h4>
                 <v-chip-group column>
                   <v-chip class="ma-1" color="primary" text-color="white"> Javascript </v-chip>
                   <v-chip class="ma-1" color="primary" text-color="white"> CSS </v-chip>
