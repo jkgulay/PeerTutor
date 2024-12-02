@@ -20,7 +20,7 @@ const onLogout = async () => {
       console.error('Error during logout:', error.message)
       return
     }
-    router.replace({ name: 'login' }) // Redirect to login after logout
+    router.replace({ name: 'login' }) 
   } catch (err) {
     console.error('Unexpected error during logout:', err)
   }
