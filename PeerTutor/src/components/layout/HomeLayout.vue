@@ -28,6 +28,7 @@ const onLogout = async () => {
 
 // User profile reactive state
 const userProfile = ref({
+  user_id: '',
   firstname: '',
   lastname: '',
   email: '',
@@ -36,50 +37,53 @@ const userProfile = ref({
   bio: '',
   expertise: '',
   availability: ''
-})
+});
 
 const fetchUserProfile = async () => {
   try {
-    const { data: user, error: authError } = await supabase.auth.getUser()
+    // Fetch the authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser ();
     if (authError) {
-      console.error('Error fetching authenticated user:', authError)
-      return
+      console.error('Error fetching authenticated user:', authError);
+      return;
     }
 
-    if (!user) {
-      console.error('No authenticated user found. Redirecting to login.')
-      router.replace({ name: 'login' }) // Redirect to login if no user is logged in
-      return
+    if (!user || !user.id) {
+      console.error('No authenticated user found or user ID is undefined.');
+      router.replace({ name: 'login' }); 
+      return;
     }
 
-    console.log('Authenticated user:', user)
+    console.log('Authenticated user:', user);
 
+    // Fetch the user profile from the database
     const { data, error: profileError } = await supabase
       .from('users')
-      .select('firstname, lastname, email, avatar, role, bio, expertise, availability')
-      .eq('user_id', user.id) // Match user ID
-      .single()
+      .select('user_id, firstname, lastname, email, avatar, role, bio, expertise, availability')
+      .eq('user_id', user.id)
+      .single();
 
     if (profileError) {
-      console.error('Error fetching user profile:', profileError)
+      console.error('Error fetching user profile:', profileError);
     } else if (data) {
       userProfile.value = {
+        user_id: data.user_id,
         firstname: data.firstname || '',
         lastname: data.lastname || '',
         email: data.email || '',
-        avatar: data.avatar || 'https://randomuser.me/api/portraits/men/91.jpg', // Default avatar
+        avatar: data.avatar || 'https://randomuser.me/api/portraits/lego/1.jpg', // Default avatar
         role: data.role || '',
         bio: data.bio || '',
         expertise: data.expertise || '',
         availability: data.availability || ''
-      }
+      };
     }
   } catch (err) {
-    console.error('Unexpected error:', err)
+    console.error('Unexpected error:', err);
   }
-}
+};
 
-// Fetch user profile on component mount
+
 onMounted(() => {
   fetchUserProfile()
 })
