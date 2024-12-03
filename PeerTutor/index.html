@@ -4,10 +4,16 @@
     <meta charset="UTF-8" />
     <link rel="icon" href="/logo/try2.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://apis.google.com https://accounts.google.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://vzbzvntozwlzxmqaevxs.supabase.co; frame-src 'self' https://accounts.google.com; img-src 'self' https://randomuser.me;">  </head>
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="script-src 'self' https://www.gstatic.com https://accounts.google.com https://apis.google.com 'unsafe-inline' 'unsafe-eval'; object-src 'none';"
+    />
+    <title>PeerTutor</title>
+    <!-- Add a title for SEO -->
+  </head>
   <body>
     <div id="app"></div>
-    <script type="module" src="/src/main.js"></script>
     <script src="https://apis.google.com/js/api.js"></script>
+    <script type="module" src="/src/main.js"></script>
   </body>
 </html>
