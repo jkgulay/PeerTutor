@@ -3,8 +3,7 @@ import HomeLayout from '@/components/layout/HomeLayout.vue'
 import { ref, onMounted, computed } from 'vue'
 import { supabase } from '@/utils/supabase'
 
-const gapi = window.gapi;
-
+const gapi = window.gapi
 
 const searchQuery = ref('')
 const tutors = ref([])
@@ -44,65 +43,72 @@ const openLink = (url) => {
 }
 
 const initClient = () => {
-  gapi.load('client:auth2', () => {
-    gapi.auth2.init({
-      client_id: '1042151788717-crdgh4totnf4hlic9icl6rd1rmlc0slu.apps.googleusercontent.com',
-      scope: 'https://www.googleapis.com/auth/gmail.send'
-    }).then(() => {
-      console.log('GAPI client initialized.');
-    }).catch((error) => {
-      console.error('Error initializing GAPI client:', error);
-    });
-  });
-};
-
+  if (typeof gapi !== 'undefined') {
+    gapi.load('client:auth2', () => {
+      gapi.auth2
+        .init({
+          client_id: '1042151788717-crdgh4totnf4hlic9icl6rd1rmlc0slu.apps.googleusercontent.com',
+          scope: 'https://www.googleapis.com/auth/gmail.send'
+        })
+        .then(() => {
+          console.log('GAPI client initialized.')
+        })
+        .catch((error) => {
+          console.error('Error initializing GAPI client:', error)
+        })
+    })
+  } else {
+    console.error('GAPI is not loaded.')
+  }
+}
 const authenticate = async () => {
   try {
-    await gapi.auth2.getAuthInstance().signIn();
-    console.log('User  signed in');
+    await gapi.auth2.getAuthInstance().signIn()
+    console.log('User  signed in')
   } catch (error) {
-    console.error('Error signing in', error);
+    console.error('Error signing in', error)
   }
-};
+}
 
 const sendEmail = async (tutorEmail) => {
-  const isSignedIn = gapi.auth2.getAuthInstance().isSignedIn.get();
+  const isSignedIn = gapi.auth2.getAuthInstance().isSignedIn.get()
+
   if (!isSignedIn) {
-    await authenticate(); 
+    await authenticate()
   }
 
-
   const email = [
+    'From: your-email@example.com',
     'To: ' + tutorEmail,
     'Subject: Subject Here',
     '',
     'Email body goes here.'
-  ].join('\n');
+  ].join('\n')
 
-  const base64EncodedEmail = btoa(email).replace(/\+/g, '-').replace(/\//g, '_');
+  const base64EncodedEmail = btoa(email).replace(/\+/g, '-').replace(/\//g, '_')
 
   try {
     await gapi.client.gmail.users.messages.send({
-      'userId': 'me',
-      'resource': {
-        'raw': base64EncodedEmail
+      userId: 'me',
+      resource: {
+        raw: base64EncodedEmail
       }
-    });
-    console.log('Email sent successfully');
+    })
+    console.log('Email sent successfully')
+    alert('Email sent successfully!') // User feedback
   } catch (error) {
-    console.error('Error sending email:', error);
-    alert('Failed to send email. Please try again.');
+    console.error('Error sending email:', error)
+    alert('Failed to send email. Please try again.') // User feedback
   }
-};
+}
 
 onMounted(() => {
-  fetchTutors();
-  initClient();
-
-});
+  fetchTutors()
+  initClient()
+})
 
 const openChat = (tutor) => {
-  console.log('Chat with:', tutor.firstname);
+  console.log('Chat with:', tutor.firstname)
 }
 </script>
 
