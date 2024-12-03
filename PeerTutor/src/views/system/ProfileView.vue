@@ -6,42 +6,47 @@ import { supabase } from '@/utils/supabase'
 
 const dialog = ref(false)
 const router = useRouter()
+const selectedFile = ref(null) // Store the selected file
 
 const userProfile = ref({
   user_id: '',
   firstname: '',
   lastname: '',
   email: '',
-  avatar: 'https://randomuser.me/api/portraits/lego/1.jpg', // Default avatar
+  avatar: 'https://randomuser.me/api/portraits/lego/1.jpg', 
   role: '',
-  bio: '',
+  bio: 'This is my Bio!',
   expertise: '',
   social_links1: '',
   social_links2: '',
   availability: false
-
 })
 
 const toggleAvailability = async () => {
-  // Toggle local availability state
   userProfile.value.availability = !userProfile.value.availability
 
   const { error } = await supabase
-    .from('users') // Replace with your actual table name
+    .from('users')
     .update({ availability: userProfile.value.availability })
-    .eq('user_id', userProfile.value.user_id) // Use userProfile.value.user_id directly
+    .eq('user_id', userProfile.value.user_id)
 
   if (error) {
     console.error('Error updating availability:', error)
-
-    // Revert the availability state if there was an error
     userProfile.value.availability = !userProfile.value.availability
+    alert('Failed to update availability. Please try again.')
   } else {
     console.log('Availability updated successfully')
+    alert('Availability updated successfully!')
   }
 }
+
 const saveProfile = async () => {
   try {
+    if (!userProfile.value.firstname || !userProfile.value.lastname || !userProfile.value.email) {
+      alert('First name, last name, and email are required fields.')
+      return
+    }
+
     const { error } = await supabase
       .from('users')
       .update({
@@ -50,29 +55,31 @@ const saveProfile = async () => {
         email: userProfile.value.email,
         role: userProfile.value.role,
         bio: userProfile.value.bio,
+        avatar: userProfile.value.avatar,
+        expertise: userProfile.value.expertise,
         occupation: userProfile.value.occupation,
         availability: userProfile.value.availability,
         social_links1: userProfile.value.social_links1,
-        social_links2:userProfile.value.social_links2
+        social_links2: userProfile.value.social_links2
       })
       .eq('user_id', userProfile.value.user_id)
 
     if (error) {
       console.error('Error updating profile:', error)
-      // Optionally show a notification to the user
+      alert('Failed to save profile. Please try again.')
     } else {
       console.log('Profile updated successfully')
-
+      alert('Profile saved successfully!')
       dialog.value = false
     }
   } catch (err) {
     console.error('Unexpected error:', err)
+    alert('An unexpected error occurred. Please try again.')
   }
 }
 
 const fetchUserProfile = async () => {
   try {
-    // Fetch the authenticated user
     const {
       data: { user },
       error: authError
@@ -90,7 +97,6 @@ const fetchUserProfile = async () => {
 
     console.log('Authenticated user:', user)
 
-    // Fetch the user profile from the database
     const { data, error: profileError } = await supabase
       .from('users')
       .select(
@@ -107,14 +113,14 @@ const fetchUserProfile = async () => {
         firstname: data.firstname || '',
         lastname: data.lastname || '',
         email: data.email || '',
-        avatar: data.avatar || 'https://randomuser.me/api/portraits/lego/1.jpg', 
+        avatar: data.avatar || '',
         role: data.role || '',
         occupation: data.occupation || '',
         bio: data.bio || '',
         expertise: data.expertise || '',
         social_links1: data.social_links1 || '',
         social_links2: data.social_links2 || '',
-        availability: data.availability || false // Ensure availability is a boolean
+        availability: data.availability || false
       }
     }
   } catch (err) {
@@ -122,6 +128,70 @@ const fetchUserProfile = async () => {
   }
 }
 
+
+
+
+const uploadAvatar = async (file) => {
+  if (!file) {
+    console.error('No file provided for upload');
+    alert('Please select a file to upload.');
+    return;
+  }
+
+  
+  const userId = (await supabase.auth.getUser ()).data.user?.id;
+  if (!userId) {
+    console.error('User  is not logged in');
+    alert('User  is not logged in. Please log in to upload an avatar.');
+    return;
+  }
+
+  const fileName = `${userId}-${Date.now()}.${file.name.split('.').pop()}`;
+  const AVATAR_BUCKET = import.meta.env.VITE_APP_AVATAR_BUCKET || 'avatars'; // Use the environment variable
+
+  const { data, error } = await supabase.storage.from(AVATAR_BUCKET).upload(fileName, file);
+
+  if (error) {
+    console.error('Error uploading avatar:', error.message);
+    alert('Failed to upload avatar. Please try again.');
+    return;
+  }
+
+  const { data: publicUrlData } = supabase.storage.from(AVATAR_BUCKET).getPublicUrl(data.path);
+
+  if (publicUrlData.publicUrl) {
+    console.log('Avatar uploaded successfully. URL:', publicUrlData.publicUrl);
+    // Update the user profile with the new avatar URL
+  }
+};
+
+const loading = ref(false)
+const selectedFilePreview = ref(null)
+
+const onAvatarChange = (files) => {
+  if (files && files.length > 0) {
+    const file = files[0]
+    const validFileTypes = ['image/jpeg', 'image/png', 'image/bmp']
+    if (validFileTypes.includes(file.type)) {
+      selectedFile.value = file
+      selectedFilePreview.value = URL.createObjectURL(file)
+      uploadAvatar(file)
+    } else {
+      alert('Please select a valid image file (JPG, PNG, BMP, JPEG).')
+    }
+  } else {
+    alert('Please select a valid image file.')
+  }
+}
+
+const saveProfileAndUploadAvatar = async () => {
+  loading.value = true
+  await saveProfile()
+  if (selectedFile.value) {
+    await uploadAvatar(selectedFile.value)
+  }
+  loading.value = false
+}
 onMounted(() => {
   fetchUserProfile()
 })
@@ -132,7 +202,6 @@ onMounted(() => {
     <template #content>
       <v-container class="profile-container d-flex justify-center pa-0">
         <v-card max-width="900" class="profile-card">
-          <!-- Profile Header with background image and profile info -->
           <v-img src="/cover.jpg" class="background-img" height="250px" cover></v-img>
 
           <v-container class="profile-header">
@@ -152,11 +221,9 @@ onMounted(() => {
             </div>
           </v-container>
 
-          <!-- Profile Details -->
           <v-card-text class="profile-details pa-4">
             <v-row class="profile-settings mb-4" justify="center">
               <v-col cols="12" md="5" class="mb-2">
-                <!-- Dialog Trigger Button -->
                 <v-btn
                   block
                   color="#80cbc4"
@@ -171,7 +238,6 @@ onMounted(() => {
                   Edit Profile
                 </v-btn>
 
-                <!-- Dialog Component -->
                 <v-dialog v-model="dialog" max-width="550">
                   <v-card>
                     <v-card-title class="text-center">
@@ -181,7 +247,7 @@ onMounted(() => {
 
                     <v-card-text>
                       <v-row dense class="d-flex justify-center">
-                        <v-col cols="12" md="6 " sm="6">
+                        <v-col cols="12" md="6">
                           <v-text-field
                             label="First name"
                             v-model="userProfile.firstname"
@@ -191,10 +257,11 @@ onMounted(() => {
                             placeholder="First Name"
                             hide-details="auto"
                             clearable
+                            density="compact"
                           ></v-text-field>
                         </v-col>
 
-                        <v-col cols="12" md="6" sm="6">
+                        <v-col cols="12" md="6">
                           <v-text-field
                             label="Last name"
                             v-model="userProfile.lastname"
@@ -203,11 +270,12 @@ onMounted(() => {
                             placeholder="Last Name"
                             hide-details="auto"
                             clearable
+                            density="compact"
                           ></v-text-field>
                         </v-col>
                       </v-row>
                       <v-row dense class="d-flex justify-center">
-                        <v-col cols="12" md="6" sm="6">
+                        <v-col cols="12" md="6">
                           <v-text-field
                             label="Email"
                             v-model="userProfile.email"
@@ -217,35 +285,39 @@ onMounted(() => {
                             placeholder="user@gmail.com"
                             hide-details="auto"
                             clearable
+                            density="compact"
                           ></v-text-field>
                         </v-col>
-                        <v-col cols="12" md="6" sm="6">
+                        <v-col cols="12" md="6">
                           <v-select
                             label="Role"
                             v-model="userProfile.role"
-                            :items="['Tutor ', 'Student']"
+                            :items="['Tutor', 'Student']"
                             variant="outlined"
                             hide-details="auto"
                             clearable
+                            density="compact"
                           ></v-select>
                         </v-col>
                       </v-row>
                       <v-row dense class="d-flex justify-center">
-                        <v-col cols="12" md="6" sm="6">
+                        <v-col cols="12" md="6">
                           <v-file-input
-                            :rules="rules"
-                            accept="image/png, image/jpeg, image/bmp"
-                            label="Avatar"
+                            accept="image/png, image/jpeg, image/bmp, image/jpg"
                             placeholder="Pick an avatar"
                             prepend-icon="mdi-camera"
                             variant="outlined"
                             hide-details="auto"
+                            label="Upload Avatar"
+                            @change="onAvatarChange"
+                            density="compact"
                           ></v-file-input>
                         </v-col>
-                        <v-col cols="12" md="6" sm="6">
+                        <v-col cols="12" md="6">
                           <v-select
                             label="Occupation"
                             v-model="userProfile.occupation"
+                            density="compact"
                             :items="[
                               'Teacher',
                               'Tutor',
@@ -275,7 +347,7 @@ onMounted(() => {
                         </v-col>
                       </v-row>
                       <v-row dense class="d-flex justify-center">
-                        <v-col cols="12" md="6 " sm="6">
+                        <v-col cols="12" md="6">
                           <v-text-field
                             label="Facebook Link"
                             v-model="userProfile.social_links1"
@@ -285,10 +357,11 @@ onMounted(() => {
                             placeholder="Facebook"
                             hide-details="auto"
                             clearable
+                            density="compact"
                           ></v-text-field>
                         </v-col>
 
-                        <v-col cols="12" md="6" sm="6">
+                        <v-col cols="12" md="6">
                           <v-text-field
                             label="LinkedIn Link"
                             v-model="userProfile.social_links2"
@@ -296,8 +369,8 @@ onMounted(() => {
                             required
                             variant="outlined"
                             placeholder="LinkedIn"
-                           
                             clearable
+                            density="compact"
                           ></v-text-field>
                         </v-col>
                       </v-row>
@@ -309,9 +382,9 @@ onMounted(() => {
                           variant="outlined"
                           hide-details="auto"
                           clearable
+                          density="compact"
                         ></v-textarea>
                       </v-row>
-                      <v-row dense class="d-flex justify-center"> </v-row>
                     </v-card-text>
 
                     <v-divider></v-divider>
@@ -319,7 +392,14 @@ onMounted(() => {
                     <v-card-actions>
                       <v-spacer></v-spacer>
                       <v-btn text @click="dialog = false">Close</v-btn>
-                      <v-btn color="primary" @click="saveProfile">Save</v-btn>
+                      <v-btn
+                        color="primary"
+                        @click="saveProfileAndUploadAvatar"
+                        :disabled="loading"
+                      >
+                        <span v-if="loading">Saving...</span>
+                        <span v-else>Save</span>
+                      </v-btn>
                     </v-card-actions>
                   </v-card>
                 </v-dialog>
@@ -338,7 +418,6 @@ onMounted(() => {
               </v-col>
             </v-row>
 
-            <!-- Skills Section -->
             <v-divider></v-divider>
             <v-row class="skills mt-4">
               <v-col>
@@ -354,7 +433,6 @@ onMounted(() => {
               </v-col>
             </v-row>
 
-            <!-- Profile Actions -->
             <v-divider class="my-4"></v-divider>
             <v-row class="profile-actions">
               <v-col cols="12">
