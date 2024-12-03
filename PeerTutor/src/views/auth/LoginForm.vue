@@ -68,44 +68,48 @@ const onFormSubmit = () => {
     :form-success-message="formAction.formSuccessMessage"
     :form-error-message="formAction.formErrorMessage"
   ></AlertNotification>
-  
+
   <v-form ref="refVForm" @submit.prevent="onFormSubmit">
-    <!-- Email Field -->
-    <v-text-field
-      v-model="formData.email"
-      label="Email"
-      variant="outlined"
-      density="compact"
-      prepend-inner-icon="mdi-account"
-      :rules="[requiredValidator, emailValidator]"
-    ></v-text-field>
-    
-    <!-- Password Field -->
-    <v-text-field
-      v-model="formData.password"
-      prepend-inner-icon="mdi-lock"
-      label="Password"
-      variant="outlined"
-      density="compact"
-      :type="isPasswordVisible ? 'text' : 'password'"
-      :append-inner-icon="isPasswordVisible ? 'mdi-eye-off' : 'mdi-eye'"
-      @click:append-inner="isPasswordVisible = !isPasswordVisible"
-      :rules="[requiredValidator]"
-    ></v-text-field>
-    
-    <!-- Submit Button -->
-    <v-container width="200">
-      <v-btn
-        color="teal-darken-2"
-        size="large"
-        type="submit"
-        variant="elevated"
-        block
-        elevation="10"
-        style="border-radius: 30px"
-      >
-        Sign In
-      </v-btn>
-    </v-container>
+    <v-card-text>
+      <v-row dense class="d-flex justify-center">
+        <!-- Email Field -->
+        <v-text-field
+          v-model="formData.email"
+          label="Email"
+          variant="outlined"
+          density="compact"
+          prepend-inner-icon="mdi-account"
+          :rules="[requiredValidator, emailValidator]"
+        ></v-text-field>
+      </v-row>
+      <v-row dense class="d-flex justify-center">
+        <!-- Password Field -->
+        <v-text-field
+          v-model="formData.password"
+          prepend-inner-icon="mdi-lock"
+          label="Password"
+          variant="outlined"
+          density="compact"
+          :type="isPasswordVisible ? 'text' : 'password'"
+          :append-inner-icon="isPasswordVisible ? 'mdi-eye-off' : 'mdi-eye'"
+          @click:append-inner="isPasswordVisible = !isPasswordVisible"
+          :rules="[requiredValidator]"
+        ></v-text-field>
+      </v-row>
+      <!-- Submit Button -->
+      <v-container dense class="d-flex justify-center">
+        <v-btn
+          color="teal-darken-2"
+          size="large"
+          type="submit"
+          variant="elevated"
+          block
+          elevation="10"
+          style="border-radius: 30px"
+        >
+          Sign In
+        </v-btn>
+      </v-container>
+    </v-card-text>
   </v-form>
 </template>

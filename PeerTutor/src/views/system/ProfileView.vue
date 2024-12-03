@@ -21,8 +21,69 @@ const expertiseOptions = [
   'HTML',
   'C',
   'Java',
-  'UI Design'
+  'UI Design',
+  'Sociology',
+  'Anthropology',
+  'Political Science',
+  'Economics',
+  'Psychology',
+  'Social Work Practice',
+  'Biochemistry',
+  'Environmental Science',
+  'Microbiology',
+  'Genetics',
+  'Ecology',
+  'Statistics',
+  'Linear Algebra',
+  'Discrete Mathematics',
+  'Data Structures',
+  'Algorithms',
+  'Machine Learning',
+  'Cybersecurity',
+  'Electrical Engineering',
+  'Mechanical Engineering',
+  'Software Engineering',
+  'Robotics',
+  'Network Systems',
+  'Database Management',
+  'Educational Psychology',
+  'Curriculum Development',
+  'Classroom Management',
+  'Assessment and Evaluation',
+  'Special Education',
+  'Agricultural Economics',
+  'Sustainable Agriculture',
+  'Horticulture Techniques',
+  'Soil Fertility Management',
+  'Pest Management',
+  'Philosophy',
+  'Literature',
+  'Creative Writing',
+  'Visual Arts',
+  'Health and Wellness',
+  'Sports Management',
+  'Kinesiology',
+  'Recreational Activities',
+  'Calculus',
+  'Statistical Analysis',
+  'Web Development',
+  'Database Management (SQL)',
+  'Network Administration',
+  'Environmental Policy',
+  'Conservation Biology',
+  'Climate Change Studies',
+  'Public Speaking',
+  'Interpersonal Communication',
+  'Media Studies',
+  'Marketing',
+  'Accounting',
+  'Entrepreneurship',
+  'Business Ethics',
+  'Introduction to Programming (Python)',
+  'Mobile App Development',
+  'Game Development'
 ]
+
 const selectedExpertise = ref([])
 const toggleExpertise = (item) => {
   if (selectedExpertise.value.includes(item)) {
@@ -36,8 +97,8 @@ const saveExpertiseToSupabase = async () => {
   try {
     const { error } = await supabase
       .from('users')
-      .update({ expertise: selectedExpertise.value }) 
-      .eq('user_id', userProfile.value.user_id) 
+      .update({ expertise: selectedExpertise.value })
+      .eq('user_id', userProfile.value.user_id)
 
     if (error) {
       console.error('Error updating expertise:', error)
@@ -154,12 +215,12 @@ const fetchUserProfile = async () => {
         role: data.role || '',
         occupation: data.occupation || '',
         bio: data.bio || '',
-        expertise: data.expertise || [], 
+        expertise: data.expertise || [],
         social_links1: data.social_links1 || '',
         social_links2: data.social_links2 || '',
         availability: data.availability || false
       }
-      selectedExpertise.value = [...userProfile.value.expertise] 
+      selectedExpertise.value = [...userProfile.value.expertise]
     }
   } catch (err) {
     console.error('Unexpected error:', err)
@@ -217,13 +278,13 @@ const onAvatarChange = (files) => {
 
 const saveProfileAndUploadAvatar = async () => {
   loading.value = true
-  await saveProfile() 
+  await saveProfile()
 
   // Save expertise to Supabase
   await saveExpertiseToSupabase()
 
   if (selectedFile.value) {
-    await uploadAvatar(selectedFile.value) 
+    await uploadAvatar(selectedFile.value)
   }
 
   dialog.value = false

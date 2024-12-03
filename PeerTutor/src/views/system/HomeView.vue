@@ -3,6 +3,9 @@ import HomeLayout from '@/components/layout/HomeLayout.vue'
 import { ref, onMounted, computed } from 'vue'
 import { supabase } from '@/utils/supabase'
 
+const gapi = window.gapi;
+
+
 const searchQuery = ref('')
 const tutors = ref([])
 const loading = ref(false)
@@ -40,12 +43,66 @@ const openLink = (url) => {
   }
 }
 
+const initClient = () => {
+  gapi.load('client:auth2', () => {
+    gapi.auth2.init({
+      client_id: '1042151788717-crdgh4totnf4hlic9icl6rd1rmlc0slu.apps.googleusercontent.com',
+      scope: 'https://www.googleapis.com/auth/gmail.send'
+    }).then(() => {
+      console.log('GAPI client initialized.');
+    }).catch((error) => {
+      console.error('Error initializing GAPI client:', error);
+    });
+  });
+};
+
+const authenticate = async () => {
+  try {
+    await gapi.auth2.getAuthInstance().signIn();
+    console.log('User  signed in');
+  } catch (error) {
+    console.error('Error signing in', error);
+  }
+};
+
+const sendEmail = async (tutorEmail) => {
+  const isSignedIn = gapi.auth2.getAuthInstance().isSignedIn.get();
+  if (!isSignedIn) {
+    await authenticate(); 
+  }
+
+
+  const email = [
+    'To: ' + tutorEmail,
+    'Subject: Subject Here',
+    '',
+    'Email body goes here.'
+  ].join('\n');
+
+  const base64EncodedEmail = btoa(email).replace(/\+/g, '-').replace(/\//g, '_');
+
+  try {
+    await gapi.client.gmail.users.messages.send({
+      'userId': 'me',
+      'resource': {
+        'raw': base64EncodedEmail
+      }
+    });
+    console.log('Email sent successfully');
+  } catch (error) {
+    console.error('Error sending email:', error);
+    alert('Failed to send email. Please try again.');
+  }
+};
+
 onMounted(() => {
-  fetchTutors()
-})
+  fetchTutors();
+  initClient();
+
+});
 
 const openChat = (tutor) => {
-  console.log('Chat with:', tutor.firstname)
+  console.log('Chat with:', tutor.firstname);
 }
 </script>
 
@@ -53,7 +110,7 @@ const openChat = (tutor) => {
   <HomeLayout @search-query="searchQuery = $event">
     <template #content>
       <v-container fluid class="d-flex flex-column" style="min-height: 100vh">
-        <v-row class="py-10">
+        <v-row class="py-4">
           <v-col v-for="tutor in filteredTutors" :key="tutor.user_id" cols="12" md="6">
             <v-card color="#05161a" style="border-radius: 20px; padding: 16px">
               <!-- Tutor Information and Social Media Icons -->
@@ -80,7 +137,7 @@ const openChat = (tutor) => {
                     text
                     color="teal-lighten-3"
                     density="compact"
-                    @click="openLink(tutor.email)"
+                    @click="sendEmail(tutor.email)"
                     class="ma-1"
                   ></v-btn>
                   <v-btn
