@@ -24,25 +24,19 @@ const formDataDefault = {
   occupation: ''
 }
 
-// Reactive form data and action state
 const formData = ref({ ...formDataDefault })
 const formAction = ref({ ...formActionDefault })
 
-// Password visibility states
 const isPasswordVisible = ref(false)
 const isRepeatPasswordVisible = ref(false)
 
-// Reference to the form
 const refVForm = ref()
 
-// Main submission function
 const onSubmit = async () => {
-  // Reset form action state
   formAction.value = { ...formActionDefault }
   formAction.value.formProcess = true
 
   try {
-    // Sign up with Supabase
     const { data: signupData, error: signupError } = await supabase.auth.signUp({
       email: formData.value.email,
       password: formData.value.password,
@@ -56,7 +50,6 @@ const onSubmit = async () => {
       }
     })
 
-    // Handle errors and success
     if (signupError) {
       console.error('Signup error:', signupError)
       formAction.value.formErrorMessage =
