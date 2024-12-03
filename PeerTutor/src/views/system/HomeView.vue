@@ -110,7 +110,7 @@ const openChat = (tutor) => {
   <HomeLayout @search-query="searchQuery = $event">
     <template #content>
       <v-container fluid class="d-flex flex-column" style="min-height: 100vh">
-        <v-row class="py-4">
+        <v-row class="py-10">
           <v-col v-for="tutor in filteredTutors" :key="tutor.user_id" cols="12" md="6">
             <v-card color="#05161a" style="border-radius: 20px; padding: 16px">
               <!-- Tutor Information and Social Media Icons -->
