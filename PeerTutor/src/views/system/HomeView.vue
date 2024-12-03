@@ -127,7 +127,6 @@ const openChat = (tutor) => {
                   </v-chip-group>
                 </v-col>
               </v-row>
-
               <!-- Button and Rating Section -->
               <v-row align="center">
                 <!-- Contact Tutor Button -->
