@@ -117,8 +117,10 @@ const onFormSubmit = () => {
 
   <v-form class="mt-5" ref="refVForm" @submit.prevent="onFormSubmit">
     <!-- Name Fields -->
-    <v-row class="d-flex mx-auto" align="center" justify="center">
-      <v-col cols="12" md="6">
+    <v-card-text>
+
+      <v-row dense class="d-flex justify-center">
+        <v-col cols="12" md="6">
         <v-text-field
           v-model="formData.firstname"
           label="First Name"
@@ -144,7 +146,7 @@ const onFormSubmit = () => {
     </v-row>
 
     <!-- Contact Information Field -->
-    <v-row class="d-flex mx-auto" align="center" justify="center">
+    <v-row dense class="d-flex justify-center">
       <v-col cols="12">
         <v-text-field
           v-model="formData.email"
@@ -159,7 +161,7 @@ const onFormSubmit = () => {
     </v-row>
 
     <!-- Password Fields -->
-    <v-row class="d-flex mx-auto" align="center" justify="center">
+    <v-row dense class="d-flex justify-center">
       <v-col cols="12" md="6">
         <v-text-field
           v-model="formData.password"
@@ -195,7 +197,7 @@ const onFormSubmit = () => {
     </v-row>
 
     <!-- Occupation and Role Fields -->
-    <v-row class="d-flex mx-auto" align="center" justify="center">
+    <v-row dense class="d-flex justify-center">
       <v-col cols="12" md="7">
         <v-select
           v-model="formData.occupation"
@@ -255,5 +257,7 @@ const onFormSubmit = () => {
         Create
       </v-btn>
     </v-container>
+  </v-card-text>
+
   </v-form>
 </template>
