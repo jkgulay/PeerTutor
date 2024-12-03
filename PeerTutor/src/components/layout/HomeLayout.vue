@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { supabase } from '@/utils/supabase'
 
-// Drawer state
+const searchQuery = ref('')
 const drawer = ref(false)
 const toggleDrawer = () => {
   drawer.value = !drawer.value
@@ -12,7 +12,6 @@ const toggleDrawer = () => {
 const dialog = ref(false)
 const router = useRouter()
 
-// Logout function
 const onLogout = async () => {
   try {
     const { error } = await supabase.auth.signOut()
@@ -20,13 +19,12 @@ const onLogout = async () => {
       console.error('Error during logout:', error.message)
       return
     }
-    router.replace({ name: 'login' }) 
+    router.replace({ name: 'login' })
   } catch (err) {
     console.error('Unexpected error during logout:', err)
   }
 }
 
-// User profile reactive state
 const userProfile = ref({
   user_id: '',
   firstname: '',
@@ -35,61 +33,59 @@ const userProfile = ref({
   avatar: '',
   role: '',
   bio: '',
-  expertise: '',
+  expertise: [],
   availability: ''
-});
+})
 
 const fetchUserProfile = async () => {
   try {
-    // Fetch the authenticated user
-    const { data: { user }, error: authError } = await supabase.auth.getUser ();
+    const {
+      data: { user },
+      error: authError
+    } = await supabase.auth.getUser()
     if (authError) {
-      console.error('Error fetching authenticated user:', authError);
-      return;
+      console.error('Error fetching authenticated user:', authError)
+      return
     }
 
     if (!user || !user.id) {
-      console.error('No authenticated user found or user ID is undefined.');
-      router.replace({ name: 'login' }); 
-      return;
+      console.error('No authenticated user found or user ID is undefined.')
+      router.replace({ name: 'login' })
+      return
     }
 
-    console.log('Authenticated user:', user);
+    console.log('Authenticated user:', user)
 
-    // Fetch the user profile from the database
     const { data, error: profileError } = await supabase
       .from('users')
       .select('user_id, firstname, lastname, email, avatar, role, bio, expertise, availability')
       .eq('user_id', user.id)
-      .single();
+      .single()
 
     if (profileError) {
-      console.error('Error fetching user profile:', profileError);
+      console.error('Error fetching user profile:', profileError)
     } else if (data) {
       userProfile.value = {
         user_id: data.user_id,
         firstname: data.firstname || '',
         lastname: data.lastname || '',
         email: data.email || '',
-        avatar: data.avatar || 'https://randomuser.me/api/portraits/lego/1.jpg', // Default avatar
+        avatar: data.avatar || 'https://randomuser.me/api/portraits/lego/1.jpg',
         role: data.role || '',
         bio: data.bio || '',
         expertise: data.expertise || '',
         availability: data.availability || ''
-      };
+      }
     }
   } catch (err) {
-    console.error('Unexpected error:', err);
+    console.error('Unexpected error:', err)
   }
-};
+}
 
-
-// Fetch user profile on component mount
 onMounted(() => {
   fetchUserProfile()
 })
 </script>
-
 
 <template>
   <v-responsive>
@@ -114,16 +110,16 @@ onMounted(() => {
 
         <v-col cols="5" class="d-flex justify-center">
           <v-text-field
-            :loading="loading"
+            v-model="searchQuery"
             append-inner-icon="mdi-magnify"
             density="compact"
             label="Search"
             variant="solo"
             hide-details
             single-line
-            @click:append-inner="onClick"
             class="mx-4"
             style="max-width: 400px; width: 100%"
+            @input="$emit('search-query', searchQuery)"
           ></v-text-field>
         </v-col>
 
@@ -224,8 +220,12 @@ onMounted(() => {
       </v-layout>
 
       <!-- Footer -->
-      <v-footer style="background: linear-gradient(#072e33, #05161a)" class="d-flex" padless>
-        <v-row justify="center" no-gutters>
+      <v-footer
+        position="relative"
+        height="auto"
+        style="background: linear-gradient(#072e33, #05161a)"
+      >
+        <v-row justify="center">
           <v-col class="text-center mt-4" cols="12" style="color: #26a69a">
             {{ new Date().getFullYear() }} — <strong>Kayel</strong>
           </v-col>

@@ -6,7 +6,7 @@ import { supabase } from '@/utils/supabase'
 
 const dialog = ref(false)
 const router = useRouter()
-const selectedFile = ref(null) // Store the selected file
+const selectedFile = ref(null)
 const loading = ref(false)
 const selectedFilePreview = ref(null)
 
@@ -26,10 +26,8 @@ const expertiseOptions = [
 const selectedExpertise = ref([])
 const toggleExpertise = (item) => {
   if (selectedExpertise.value.includes(item)) {
-    // Remove the item if it's already selected
     selectedExpertise.value = selectedExpertise.value.filter((expertise) => expertise !== item)
   } else {
-    // Add the item if it's not selected
     selectedExpertise.value.push(item)
   }
 }
@@ -38,8 +36,8 @@ const saveExpertiseToSupabase = async () => {
   try {
     const { error } = await supabase
       .from('users')
-      .update({ expertise: selectedExpertise.value }) // Update with the selected expertise
-      .eq('user_id', userProfile.value.user_id) // Ensure you have the correct user ID
+      .update({ expertise: selectedExpertise.value }) 
+      .eq('user_id', userProfile.value.user_id) 
 
     if (error) {
       console.error('Error updating expertise:', error)
@@ -156,12 +154,12 @@ const fetchUserProfile = async () => {
         role: data.role || '',
         occupation: data.occupation || '',
         bio: data.bio || '',
-        expertise: data.expertise || [], // Ensure expertise is an array
+        expertise: data.expertise || [], 
         social_links1: data.social_links1 || '',
         social_links2: data.social_links2 || '',
         availability: data.availability || false
       }
-      selectedExpertise.value = [...userProfile.value.expertise] // Initialize selectedExpertise with user's expertise
+      selectedExpertise.value = [...userProfile.value.expertise] 
     }
   } catch (err) {
     console.error('Unexpected error:', err)
@@ -219,13 +217,13 @@ const onAvatarChange = (files) => {
 
 const saveProfileAndUploadAvatar = async () => {
   loading.value = true
-  await saveProfile() // Assuming saveProfile is defined elsewhere
+  await saveProfile() 
 
   // Save expertise to Supabase
   await saveExpertiseToSupabase()
 
   if (selectedFile.value) {
-    await uploadAvatar(selectedFile.value) // Assuming uploadAvatar is defined elsewhere
+    await uploadAvatar(selectedFile.value) 
   }
 
   dialog.value = false

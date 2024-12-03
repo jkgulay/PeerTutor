@@ -1,8 +1,9 @@
 <script setup>
 import HomeLayout from '@/components/layout/HomeLayout.vue'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { supabase } from '@/utils/supabase'
 
+const searchQuery = ref('')
 const tutors = ref([])
 const loading = ref(false)
 const selectedExpertise = ref([])
@@ -25,6 +26,14 @@ const fetchTutors = async () => {
   loading.value = false
 }
 
+const filteredTutors = computed(() =>
+  tutors.value.filter((tutor) =>
+    `${tutor.firstname} ${tutor.lastname} ${tutor.bio} ${tutor.expertise}`
+      .toLowerCase()
+      .includes(searchQuery.value.toLowerCase())
+  )
+)
+
 const openLink = (url) => {
   if (url) {
     window.open(url, '_blank')
@@ -41,68 +50,75 @@ const openChat = (tutor) => {
 </script>
 
 <template>
-  <HomeLayout>
+  <HomeLayout @search-query="searchQuery = $event">
     <template #content>
-      <v-container fluid>
+      <v-container fluid class="d-flex flex-column" style="min-height: 100vh">
         <v-row class="py-10">
-          <v-col v-for="tutor in tutors" :key="tutor.user_id" cols="12" md="6">
-            <v-card color="#05161a" style="border-radius: 20px">
+          <v-col v-for="tutor in filteredTutors" :key="tutor.user_id" cols="12" md="6">
+            <v-card color="#05161a" style="border-radius: 20px; padding: 16px">
               <!-- Tutor Information and Social Media Icons -->
-              <v-row class="mx-2 mt-2" align="center">
+              <v-row class="mb-4" align="center">
                 <!-- Avatar -->
                 <v-col cols="auto">
-                  <v-avatar>
+                  <v-avatar size="64">
                     <v-img :src="tutor.avatar"></v-img>
                   </v-avatar>
                 </v-col>
                 <v-col>
                   <div>
-                    <h3>{{ tutor.firstname }} {{ tutor.lastname }}</h3>
-                    <p>{{ tutor.occupation }}</p>
+                    <h3 class="text-h5 text-white mb-1">
+                      {{ tutor.firstname }} {{ tutor.lastname }}
+                    </h3>
+                    <p class="text-body-2 text-grey-400">{{ tutor.occupation }}</p>
                   </div>
                 </v-col>
 
                 <!-- Social Media Icons -->
                 <v-col cols="auto" class="d-flex justify-end">
                   <v-btn
-                    icon="mdi-gmail"
+                    icon="mdi-email"
                     text
-                    color="#05161a"
+                    color="teal-lighten-3"
                     density="compact"
                     @click="openLink(tutor.email)"
+                    class="ma-1"
                   ></v-btn>
                   <v-btn
                     icon="mdi-facebook"
                     text
-                    color="#05161a"
+                    color="teal-lighten-3"
                     density="compact"
                     @click="openLink(tutor.social_links1)"
+                    class="ma-1"
                   ></v-btn>
                   <v-btn
                     icon="mdi-linkedin"
                     text
-                    color="#05161a"
+                    color="teal-lighten-3"
                     density="compact"
                     @click="openLink(tutor.social_links2)"
+                    class="ma-1"
                   ></v-btn>
                 </v-col>
               </v-row>
 
               <!-- Description Section -->
-              <v-container class="mt-2">
-                <p>
+              <v-container class="py-2 px-0">
+                <p class="text-body-1 text-grey-300 mb-3">
                   {{ tutor.bio }}
                 </p>
               </v-container>
-              <v-row class="mx-2" align="center">
-                <v-col cols="auto">
+
+              <!-- Expertise Section -->
+              <v-row class="mb-3" justify="start">
+                <v-col cols="12">
                   <v-chip-group column>
                     <v-chip
                       v-for="(item, index) in tutor.expertise"
                       :key="index"
                       :class="{ selected: selectedExpertise.includes(item) }"
                       class="ma-1"
-                      color="primary"
+                      color="teal-darken-2"
                       text-color="white"
                       @click="toggleExpertise(item)"
                     >
@@ -111,8 +127,9 @@ const openChat = (tutor) => {
                   </v-chip-group>
                 </v-col>
               </v-row>
+
               <!-- Button and Rating Section -->
-              <v-row class="mx-2 mb-2" align="center">
+              <v-row align="center">
                 <!-- Contact Tutor Button -->
                 <v-col cols="auto">
                   <v-btn
@@ -123,8 +140,7 @@ const openChat = (tutor) => {
                     variant="elevated"
                     block
                     elevation="10"
-                    style="border-radius: 30px"
-                    height="40px"
+                    style="border-radius: 30px; height: 40px"
                     append-icon="mdi-phone-plus"
                     @click="openChat(tutor)"
                   >
@@ -132,11 +148,12 @@ const openChat = (tutor) => {
                   </v-btn>
                 </v-col>
 
+                <!-- Rating -->
                 <v-col cols="auto" class="d-flex justify-end">
                   <v-rating
                     hover
                     :length="5"
-                    :size="32"
+                    :size="28"
                     :model-value="tutor.rating"
                     active-color="teal-darken-2"
                   />
@@ -149,3 +166,10 @@ const openChat = (tutor) => {
     </template>
   </HomeLayout>
 </template>
+
+<style scoped>
+.v-btn {
+  text-transform: none;
+  font-weight: 500;
+}
+</style>
