@@ -7,20 +7,66 @@ import { supabase } from '@/utils/supabase'
 const dialog = ref(false)
 const router = useRouter()
 const selectedFile = ref(null) // Store the selected file
+const loading = ref(false)
+const selectedFilePreview = ref(null)
 
+const expertiseOptions = [
+  'Math',
+  'English',
+  'Filipino',
+  'Science',
+  'History',
+  'JavaScript',
+  'CSS',
+  'HTML',
+  'C',
+  'Java',
+  'UI Design'
+]
+const selectedExpertise = ref([])
+const toggleExpertise = (item) => {
+  if (selectedExpertise.value.includes(item)) {
+    // Remove the item if it's already selected
+    selectedExpertise.value = selectedExpertise.value.filter((expertise) => expertise !== item)
+  } else {
+    // Add the item if it's not selected
+    selectedExpertise.value.push(item)
+  }
+}
+
+const saveExpertiseToSupabase = async () => {
+  try {
+    const { error } = await supabase
+      .from('users')
+      .update({ expertise: selectedExpertise.value }) // Update with the selected expertise
+      .eq('user_id', userProfile.value.user_id) // Ensure you have the correct user ID
+
+    if (error) {
+      console.error('Error updating expertise:', error)
+    } else {
+      console.log('Expertise updated successfully:', selectedExpertise.value)
+    }
+  } catch (err) {
+    console.error('Unexpected error:', err)
+  }
+}
 const userProfile = ref({
   user_id: '',
   firstname: '',
   lastname: '',
   email: '',
-  avatar: 'https://randomuser.me/api/portraits/lego/1.jpg', 
+  avatar: 'https://randomuser.me/api/portraits/lego/1.jpg',
   role: '',
   bio: 'This is my Bio!',
-  expertise: '',
+  expertise: [],
   social_links1: '',
   social_links2: '',
   availability: false
 })
+
+const updateExpertise = () => {
+  userProfile.value.expertise = [...selectedExpertise.value]
+}
 
 const toggleAvailability = async () => {
   userProfile.value.availability = !userProfile.value.availability
@@ -42,11 +88,6 @@ const toggleAvailability = async () => {
 
 const saveProfile = async () => {
   try {
-    if (!userProfile.value.firstname || !userProfile.value.lastname || !userProfile.value.email) {
-      alert('First name, last name, and email are required fields.')
-      return
-    }
-
     const { error } = await supabase
       .from('users')
       .update({
@@ -57,7 +98,6 @@ const saveProfile = async () => {
         bio: userProfile.value.bio,
         avatar: userProfile.value.avatar,
         expertise: userProfile.value.expertise,
-        occupation: userProfile.value.occupation,
         availability: userProfile.value.availability,
         social_links1: userProfile.value.social_links1,
         social_links2: userProfile.value.social_links2
@@ -70,7 +110,6 @@ const saveProfile = async () => {
     } else {
       console.log('Profile updated successfully')
       alert('Profile saved successfully!')
-      dialog.value = false
     }
   } catch (err) {
     console.error('Unexpected error:', err)
@@ -113,60 +152,54 @@ const fetchUserProfile = async () => {
         firstname: data.firstname || '',
         lastname: data.lastname || '',
         email: data.email || '',
-        avatar: data.avatar || '',
+        avatar: data.avatar || 'https://randomuser.me/api/portraits/lego/1.jpg',
         role: data.role || '',
         occupation: data.occupation || '',
         bio: data.bio || '',
-        expertise: data.expertise || '',
+        expertise: data.expertise || [], // Ensure expertise is an array
         social_links1: data.social_links1 || '',
         social_links2: data.social_links2 || '',
         availability: data.availability || false
       }
+      selectedExpertise.value = [...userProfile.value.expertise] // Initialize selectedExpertise with user's expertise
     }
   } catch (err) {
     console.error('Unexpected error:', err)
   }
 }
 
-
-
-
 const uploadAvatar = async (file) => {
   if (!file) {
-    console.error('No file provided for upload');
-    alert('Please select a file to upload.');
-    return;
+    console.error('No file provided for upload')
+    alert('Please select a file to upload.')
+    return
   }
 
-  
-  const userId = (await supabase.auth.getUser ()).data.user?.id;
+  const userId = (await supabase.auth.getUser()).data.user?.id
   if (!userId) {
-    console.error('User  is not logged in');
-    alert('User  is not logged in. Please log in to upload an avatar.');
-    return;
+    console.error('User  is not logged in')
+    alert('User  is not logged in. Please log in to upload an avatar.')
+    return
   }
 
-  const fileName = `${userId}-${Date.now()}.${file.name.split('.').pop()}`;
-  const AVATAR_BUCKET = import.meta.env.VITE_APP_AVATAR_BUCKET || 'avatars'; // Use the environment variable
+  const fileName = `${userId}-${Date.now()}.${file.name.split('.').pop()}`
+  const AVATAR_BUCKET = import.meta.env.VITE_APP_AVATAR_BUCKET || 'avatars' // Use the environment variable
 
-  const { data, error } = await supabase.storage.from(AVATAR_BUCKET).upload(fileName, file);
+  const { data, error } = await supabase.storage.from(AVATAR_BUCKET).upload(fileName, file)
 
   if (error) {
-    console.error('Error uploading avatar:', error.message);
-    alert('Failed to upload avatar. Please try again.');
-    return;
+    console.error('Error uploading avatar:', error.message)
+    alert('Failed to upload avatar. Please try again.')
+    return
   }
 
-  const { data: publicUrlData } = supabase.storage.from(AVATAR_BUCKET).getPublicUrl(data.path);
+  const { data: publicUrlData } = supabase.storage.from(AVATAR_BUCKET).getPublicUrl(data.path)
 
   if (publicUrlData.publicUrl) {
-    console.log('Avatar uploaded successfully. URL:', publicUrlData.publicUrl);
-    // Update the user profile with the new avatar URL
+    console.log('Avatar uploaded successfully. URL:', publicUrlData.publicUrl)
+    userProfile.value.avatar = publicUrlData.publicUrl // Update the user profile with the new avatar URL
   }
-};
-
-const loading = ref(false)
-const selectedFilePreview = ref(null)
+}
 
 const onAvatarChange = (files) => {
   if (files && files.length > 0) {
@@ -186,12 +219,19 @@ const onAvatarChange = (files) => {
 
 const saveProfileAndUploadAvatar = async () => {
   loading.value = true
-  await saveProfile()
+  await saveProfile() // Assuming saveProfile is defined elsewhere
+
+  // Save expertise to Supabase
+  await saveExpertiseToSupabase()
+
   if (selectedFile.value) {
-    await uploadAvatar(selectedFile.value)
+    await uploadAvatar(selectedFile.value) // Assuming uploadAvatar is defined elsewhere
   }
+
+  dialog.value = false
   loading.value = false
 }
+
 onMounted(() => {
   fetchUserProfile()
 })
@@ -255,7 +295,6 @@ onMounted(() => {
                             variant="outlined"
                             prepend-inner-icon="mdi-badge-account-outline"
                             placeholder="First Name"
-                            hide-details="auto"
                             clearable
                             density="compact"
                           ></v-text-field>
@@ -268,7 +307,6 @@ onMounted(() => {
                             required
                             variant="outlined"
                             placeholder="Last Name"
-                            hide-details="auto"
                             clearable
                             density="compact"
                           ></v-text-field>
@@ -283,7 +321,6 @@ onMounted(() => {
                             variant="outlined"
                             prepend-inner-icon="mdi-email"
                             placeholder="user@gmail.com"
-                            hide-details="auto"
                             clearable
                             density="compact"
                           ></v-text-field>
@@ -294,7 +331,6 @@ onMounted(() => {
                             v-model="userProfile.role"
                             :items="['Tutor', 'Student']"
                             variant="outlined"
-                            hide-details="auto"
                             clearable
                             density="compact"
                           ></v-select>
@@ -307,7 +343,6 @@ onMounted(() => {
                             placeholder="Pick an avatar"
                             prepend-icon="mdi-camera"
                             variant="outlined"
-                            hide-details="auto"
                             label="Upload Avatar"
                             @change="onAvatarChange"
                             density="compact"
@@ -342,7 +377,6 @@ onMounted(() => {
                               'Other'
                             ]"
                             variant="outlined"
-                            hide-details="auto"
                           ></v-select>
                         </v-col>
                       </v-row>
@@ -355,7 +389,6 @@ onMounted(() => {
                             variant="outlined"
                             prepend-inner-icon="mdi-facebook"
                             placeholder="Facebook"
-                            hide-details="auto"
                             clearable
                             density="compact"
                           ></v-text-field>
@@ -378,12 +411,26 @@ onMounted(() => {
                         <v-textarea
                           v-model="userProfile.bio"
                           label="Bio"
-                          maxlength="120"
+                          maxlength="240"
                           variant="outlined"
-                          hide-details="auto"
                           clearable
                           density="compact"
                         ></v-textarea>
+                      </v-row>
+
+                      <v-row dense class="d-flex justify-center">
+                        <v-autocomplete
+                          v-model="selectedExpertise"
+                          :items="expertiseOptions"
+                          label="Select Expertise"
+                          density="compact"
+                          variant="outlined"
+                          multiple
+                          chips
+                          clearable
+                          placeholder="Start typing to search..."
+                          @change="updateExpertise"
+                        />
                       </v-row>
                     </v-card-text>
 
@@ -419,16 +466,21 @@ onMounted(() => {
             </v-row>
 
             <v-divider></v-divider>
-            <v-row class="skills mt-4">
+            <v-row class="expertise mt-4">
               <v-col>
                 <h4 class="mb-3">Expertise</h4>
                 <v-chip-group column>
-                  <v-chip class="ma-1" color="primary" text-color="white"> Javascript </v-chip>
-                  <v-chip class="ma-1" color="primary" text-color="white"> CSS </v-chip>
-                  <v-chip class="ma-1" color="primary" text-color="white"> HTML </v-chip>
-                  <v-chip class="ma-1" color="primary" text-color="white"> C </v-chip>
-                  <v-chip class="ma-1" color="primary" text-color="white"> Java </v-chip>
-                  <v-chip class="ma-1" color="primary" text-color="white"> UI Design </v-chip>
+                  <v-chip
+                    v-for="(item, index) in userProfile.expertise"
+                    :key="index"
+                    :class="{ selected: selectedExpertise.includes(item) }"
+                    class="ma-1"
+                    color="primary"
+                    text-color="white"
+                    @click="toggleExpertise(item)"
+                  >
+                    {{ item }}
+                  </v-chip>
                 </v-chip-group>
               </v-col>
             </v-row>
@@ -509,7 +561,7 @@ onMounted(() => {
   color: #9e9e9e;
 }
 
-.skills h4 {
+.expertise h4 {
   font-weight: bold;
 }
 

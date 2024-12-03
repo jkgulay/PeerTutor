@@ -5,13 +5,14 @@ import { supabase } from '@/utils/supabase'
 
 const tutors = ref([])
 const loading = ref(false)
+const selectedExpertise = ref([])
 
 const fetchTutors = async () => {
   loading.value = true
   const { data, error } = await supabase
     .from('users')
     .select(
-      'user_id, firstname, lastname, email, avatar, occupation, bio, role, rating, social_links1, social_links2, availability'
+      'user_id, firstname, lastname, email, avatar, occupation, bio, role, rating, social_links1, social_links2, availability, expertise'
     )
     .eq('role', 'Tutor')
     .eq('availability', true)
@@ -23,6 +24,7 @@ const fetchTutors = async () => {
   }
   loading.value = false
 }
+
 const openLink = (url) => {
   if (url) {
     window.open(url, '_blank')
@@ -53,8 +55,6 @@ const openChat = (tutor) => {
                     <v-img :src="tutor.avatar"></v-img>
                   </v-avatar>
                 </v-col>
-
-                <!-- Tutor Name and Subtitle -->
                 <v-col>
                   <div>
                     <h3>{{ tutor.firstname }} {{ tutor.lastname }}</h3>
@@ -94,7 +94,23 @@ const openChat = (tutor) => {
                   {{ tutor.bio }}
                 </p>
               </v-container>
-
+              <v-row class="mx-2" align="center">
+                <v-col cols="auto">
+                  <v-chip-group column>
+                    <v-chip
+                      v-for="(item, index) in tutor.expertise"
+                      :key="index"
+                      :class="{ selected: selectedExpertise.includes(item) }"
+                      class="ma-1"
+                      color="primary"
+                      text-color="white"
+                      @click="toggleExpertise(item)"
+                    >
+                      {{ item }}
+                    </v-chip>
+                  </v-chip-group>
+                </v-col>
+              </v-row>
               <!-- Button and Rating Section -->
               <v-row class="mx-2 mb-2" align="center">
                 <!-- Contact Tutor Button -->
@@ -116,7 +132,6 @@ const openChat = (tutor) => {
                   </v-btn>
                 </v-col>
 
-                <!-- Rating Section -->
                 <v-col cols="auto" class="d-flex justify-end">
                   <v-rating
                     hover
@@ -129,6 +144,8 @@ const openChat = (tutor) => {
               </v-row>
             </v-card>
           </v-col>
-        </v-row> </v-container></template
-  ></HomeLayout>
+        </v-row>
+      </v-container>
+    </template>
+  </HomeLayout>
 </template>
