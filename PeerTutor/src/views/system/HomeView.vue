@@ -3,8 +3,6 @@ import HomeLayout from '@/components/layout/HomeLayout.vue'
 import { ref, onMounted, computed } from 'vue'
 import { supabase } from '@/utils/supabase'
 
-const gapi = window.gapi
-
 const searchQuery = ref('')
 const tutors = ref([])
 const loading = ref(false)
@@ -30,16 +28,14 @@ const fetchTutors = async () => {
 
 const fetchSubjects = async () => {
   loading.value = true
-  const {data, error} = await supabase
+  const { data, error } = await supabase
     .from('subjects')
-    .select(
-      'subject_name'
-    )
-    .eq('id')
-    if(error){
-      console.error('Error fetching subjects:', error)
-      fetchSubjects.value = data
-    }
+    .select('id, subject_name')
+    .eq('subject_name')
+  if (error) {
+    console.error('Error fetching subjects:', error)
+    fetchSubjects.value = data
+  }
 }
 
 const filteredTutors = computed(() =>
@@ -50,76 +46,28 @@ const filteredTutors = computed(() =>
   )
 )
 
+const sendEmail = (recipientEmail, tutor) => {
+  const subject = encodeURIComponent('Tutoring Connection Request')
+  const body = encodeURIComponent(`Hi ${tutor.firstname},
+
+I'm interested in connecting with you for tutoring.
+
+Best regards,
+[Your Name]`)
+
+  const mailtoLink = `mailto:${recipientEmail}?subject=${subject}&body=${body}`
+
+  window.location.href = mailtoLink
+}
 const openLink = (url) => {
   if (url) {
     window.open(url, '_blank')
   }
 }
 
-const initClient = () => {
-  if (typeof gapi !== 'undefined') {
-    gapi.load('client:auth2', () => {
-      gapi.auth2
-        .init({
-          client_id: '1042151788717-crdgh4totnf4hlic9icl6rd1rmlc0slu.apps.googleusercontent.com',
-          scope: 'https://www.googleapis.com/auth/gmail.send'
-        })
-        .then(() => {
-          console.log('GAPI client initialized.')
-        })
-        .catch((error) => {
-          console.error('Error initializing GAPI client:', error)
-        })
-    })
-  } else {
-    console.error('GAPI is not loaded.')
-  }
-}
-const authenticate = async () => {
-  try {
-    await gapi.auth2.getAuthInstance().signIn()
-    console.log('User  signed in')
-  } catch (error) {
-    console.error('Error signing in', error)
-  }
-}
-
-const sendEmail = async (tutorEmail) => {
-  const isSignedIn = gapi.auth2.getAuthInstance().isSignedIn.get()
-
-  if (!isSignedIn) {
-    await authenticate()
-  }
-
-  const email = [
-    'From: your-email@example.com',
-    'To: ' + tutorEmail,
-    'Subject: Subject Here',
-    '',
-    'Email body goes here.'
-  ].join('\n')
-
-  const base64EncodedEmail = btoa(email).replace(/\+/g, '-').replace(/\//g, '_')
-
-  try {
-    await gapi.client.gmail.users.messages.send({
-      userId: 'me',
-      resource: {
-        raw: base64EncodedEmail
-      }
-    })
-    console.log('Email sent successfully')
-    alert('Email sent successfully!') // User feedback
-  } catch (error) {
-    console.error('Error sending email:', error)
-    alert('Failed to send email. Please try again.') // User feedback
-  }
-}
-
 onMounted(() => {
   fetchTutors()
   fetchSubjects()
-  initClient()
 })
 
 const openChat = (tutor) => {
@@ -158,7 +106,7 @@ const openChat = (tutor) => {
                     text
                     color="teal-lighten-3"
                     density="compact"
-                    @click="sendEmail(tutor.email)"
+                    @click="sendEmail(tutor.email, tutor)"
                     class="ma-1"
                   ></v-btn>
                   <v-btn

@@ -151,6 +151,12 @@ const toggleAvailability = async () => {
 }
 
 const saveProfile = async () => {
+  loading.value = true
+  if (!userProfile.value.firstname || !userProfile.value.lastname || !userProfile.value.email) {
+    alert('Please fill in all required fields.')
+    loading.value = false
+    return
+  }
   try {
     const { error } = await supabase
       .from('users')
@@ -236,86 +242,217 @@ const fetchUserProfile = async () => {
 
 const uploadAvatar = async (file) => {
   if (!file) {
-    console.error('No file provided for upload.');
-    alert('Please select a file to upload.');
-    return;
+    console.error('No file provided for upload.')
+    alert('Please select a file to upload.')
+    return null
   }
+
   try {
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    const userId = user.id;
-    if (authError || !userId) {
-      console.error('User not logged in:', authError);
-      alert('User is not logged in. Please log in to upload an avatar.');
-      return;
+    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif']
+    const MAX_SIZE = 5 * 1024 * 1024
+
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      alert('Invalid file type. Only JPEG, PNG, and GIF are allowed.')
+      return null
     }
 
-    const fileName = `${userId}-${Date.now()}.${file.name.split('.').pop().toLowerCase()}`;
-    const AVATAR_BUCKET = 'avatars';
-    const FOLDER_NAME = 'profile';
+    if (file.size > MAX_SIZE) {
+      alert('File is too large. Maximum size is 5MB.')
+      return null
+    }
 
-    // Upload the file to Supabase storage
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const {
+      data: { user },
+      error: authError
+    } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      console.error('User not logged in:', authError)
+      alert('User is not logged in. Please log in to upload an avatar.')
+      return null
+    }
+
+    const userId = user.id
+    const fileName = `${userId}-${Date.now()}.${file.name.split('.').pop().toLowerCase()}`
+    const AVATAR_BUCKET = 'avatars'
+    const FOLDER_NAME = 'profile'
+    const filePath = `${FOLDER_NAME}/${fileName}`
+
+    const { error: uploadError } = await supabase.storage
       .from(AVATAR_BUCKET)
-      .upload(`${FOLDER_NAME}/${fileName}`, file);
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: true
+      })
 
     if (uploadError) {
-      console.error('Error uploading avatar:', uploadError.message);
-      alert('Failed to upload avatar. Please try again.');
-      return;
+      console.error('Error uploading avatar:', uploadError.message)
+      alert('Failed to upload avatar. Please try again.')
+      return null
     }
 
-    const { data: publicUrlData, error: publicUrlError } = await supabase.storage
-      .from(AVATAR_BUCKET)
-      .getPublicUrl(uploadData.path);
+    const { data: urlData } = supabase.storage.from(AVATAR_BUCKET).getPublicUrl(filePath)
 
-    if (publicUrlError || !publicUrlData?.publicUrl) {
-      console.error('Error generating public URL:', publicUrlError);
-      alert('Failed to retrieve the uploaded avatar URL. Please try again.');
-      return;
-    }
+    const avatarUrl = urlData.publicUrl
 
-    const avatarUrl = publicUrlData.publicUrl;
-    console.log('Avatar uploaded successfully. URL:', avatarUrl);
-
-    // Update user avatar in the database
     const { error: updateError } = await supabase
       .from('users')
-      .update({ avatar: avatarUrl })
-      .eq('user_id', userId);
+      .update({
+        avatar: avatarUrl
+      })
+      .eq('user_id', userId)
+      .select()
 
     if (updateError) {
-      console.error('Error updating user avatar in database:', updateError.message);
-      alert('Failed to save avatar to profile. Please try again.');
-      return;
+      console.error('Error updating user avatar in database:', updateError.message)
+      alert('Failed to save avatar to profile. Please try again.')
+      return null
     }
 
-    alert('Avatar uploaded and updated successfully!');
+    userProfile.value.avatar = avatarUrl
+
+    console.log('Avatar uploaded successfully. URL:', avatarUrl)
+
+    return avatarUrl
   } catch (error) {
-    console.error('Unexpected error:', error);
-    alert('An unexpected error occurred. Please try again.');
+    console.error('Unexpected error:', error)
+    alert('An unexpected error occurred. Please try again.')
+    return null
   }
 }
 
-const onAvatarChange = (event) => {
+const onAvatarChange = async (event) => {
   const files = event.target.files
   if (files && files.length > 0) {
     const file = files[0]
     console.log('Selected file:', file)
-    uploadAvatar(file)
+
+    selectedFile.value = file
+
+    const uploadedAvatarUrl = await uploadAvatar(file)
+
+    if (uploadedAvatarUrl) {
+      userProfile.value.avatar = uploadedAvatarUrl
+    }
+  } else {
+    alert('No file selected. Please choose an image file.')
+  }
+}
+
+const uploadBackground = async (file) => {
+  if (!file) {
+    console.error('No file provided for upload.')
+    alert('Please select a file to upload.')
+    return null
+  }
+
+  try {
+    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+    const MAX_SIZE = 10 * 1024 * 1024
+
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      alert('Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.')
+      return null
+    }
+
+    if (file.size > MAX_SIZE) {
+      alert('File is too large. Maximum size is 10MB.')
+      return null
+    }
+
+    const {
+      data: { user },
+      error: authError
+    } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      console.error('User not logged in:', authError)
+      alert('User is not logged in. Please log in to upload a background.')
+      return null
+    }
+
+    const userId = user.id
+    const fileName = `background-${userId}-${Date.now()}.${file.name.split('.').pop().toLowerCase()}`
+    const BACKGROUND_BUCKET = 'backgrounds'
+    const FOLDER_NAME = 'back'
+    const filePath = `${FOLDER_NAME}/${fileName}`
+
+    const { error: uploadError } = await supabase.storage
+      .from(BACKGROUND_BUCKET)
+      .upload(filePath, file, {
+        cacheControl: '31536000',
+        upsert: true
+      })
+
+    if (uploadError) {
+      console.error('Error uploading background:', uploadError.message)
+      alert('Failed to upload background. Please try again.')
+      return null
+    }
+
+    const { data: urlData } = supabase.storage.from(BACKGROUND_BUCKET).getPublicUrl(filePath)
+
+    const backgroundUrl = urlData.publicUrl
+
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({
+        background: backgroundUrl
+      })
+      .eq('user_id', userId)
+      .select()
+
+    if (updateError) {
+      console.error('Error updating user background in database:', updateError.message)
+      alert('Failed to save background to profile. Please try again.')
+      return null
+    }
+
+    userProfile.value.background = backgroundUrl
+
+    console.log('Background uploaded successfully. URL:', backgroundUrl)
+
+    return backgroundUrl
+  } catch (error) {
+    console.error('Unexpected background upload error:', error)
+    alert('An unexpected error occurred while uploading background. Please try again.')
+    return null
+  }
+}
+
+const onBackgroundChange = async (event) => {
+  const files = event.target.files
+  if (files && files.length > 0) {
+    const file = files[0]
+
+    try {
+      const uploadedBackgroundUrl = await uploadBackground(file)
+
+      if (uploadedBackgroundUrl) {
+        userProfile.value.background = uploadedBackgroundUrl
+      }
+    } catch (error) {
+      console.error('Background upload failed:', error)
+      alert('Failed to upload background. Please try again.')
+    }
   } else {
     alert('No file selected. Please choose an image file.')
   }
 }
 
 const saveProfileAndUploadAvatar = async () => {
-  loading.value = true;
-  await saveProfile(); 
-  await saveExpertiseToSupabase();
+  loading.value = true
+  await saveProfile()
+  await saveExpertiseToSupabase()
   if (selectedFile.value) {
-    await uploadAvatar(selectedFile.value);
+    await uploadAvatar(selectedFile.value)
   }
-  dialog.value = false;
-  loading.value = false;
+  if (selectedFile.value) {
+    await uploadBackground(selectedFile.value)
+  }
+
+  dialog.value = false
+  loading.value = false
 }
 
 onMounted(() => {
@@ -517,6 +654,17 @@ onMounted(() => {
                           placeholder="Start typing to search..."
                           @change="updateExpertise"
                         />
+                      </v-row>
+                      <v-row dense class="d-flex justify-center">
+                        <v-file-input
+                          accept="image/*"
+                          placeholder="Pick an avatar"
+                          prepend-icon="mdi-camera"
+                          variant="outlined"
+                          label="Upload Background"
+                          @change="onBackgroundChange"
+                          density="compact"
+                        ></v-file-input>
                       </v-row>
                     </v-card-text>
 
