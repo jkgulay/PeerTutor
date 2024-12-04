@@ -4,11 +4,16 @@ import HomeLayout from '@/components/layout/HomeLayout.vue'
 import { useRouter } from 'vue-router'
 import { supabase } from '@/utils/supabase'
 
+supabase.auth.onAuthStateChange((event, session) => {
+  if (!session) {
+    router.replace({ name: 'login' })
+  }
+})
+
 const dialog = ref(false)
 const router = useRouter()
 const selectedFile = ref(null)
 const loading = ref(false)
-const selectedFilePreview = ref(null)
 
 const expertiseOptions = [
   'Math',
@@ -114,7 +119,7 @@ const userProfile = ref({
   firstname: '',
   lastname: '',
   email: '',
-  avatar: 'https://randomuser.me/api/portraits/lego/1.jpg',
+  avatar: '',
   role: '',
   bio: 'This is my Bio!',
   expertise: [],
@@ -146,6 +151,12 @@ const toggleAvailability = async () => {
 }
 
 const saveProfile = async () => {
+  loading.value = true
+  if (!userProfile.value.firstname || !userProfile.value.lastname || !userProfile.value.email) {
+    alert('Please fill in all required fields.')
+    loading.value = false
+    return
+  }
   try {
     const { error } = await supabase
       .from('users')
@@ -159,7 +170,8 @@ const saveProfile = async () => {
         expertise: userProfile.value.expertise,
         availability: userProfile.value.availability,
         social_links1: userProfile.value.social_links1,
-        social_links2: userProfile.value.social_links2
+        social_links2: userProfile.value.social_links2,
+        background: userProfile.value.background
       })
       .eq('user_id', userProfile.value.user_id)
 
@@ -198,7 +210,7 @@ const fetchUserProfile = async () => {
     const { data, error: profileError } = await supabase
       .from('users')
       .select(
-        'user_id, firstname, lastname, email, avatar, occupation, role, bio, expertise, availability, social_links1, social_links2'
+        'user_id, firstname, lastname, email, avatar, occupation, role, bio, expertise, background, availability, social_links1, social_links2'
       )
       .eq('user_id', user.id)
       .single()
@@ -211,14 +223,15 @@ const fetchUserProfile = async () => {
         firstname: data.firstname || '',
         lastname: data.lastname || '',
         email: data.email || '',
-        avatar: data.avatar || 'https://randomuser.me/api/portraits/lego/1.jpg',
+        avatar: data.avatar || '',
         role: data.role || '',
         occupation: data.occupation || '',
         bio: data.bio || '',
         expertise: data.expertise || [],
         social_links1: data.social_links1 || '',
         social_links2: data.social_links2 || '',
-        availability: data.availability || false
+        availability: data.availability || false,
+        background: data.background || ''
       }
       selectedExpertise.value = [...userProfile.value.expertise]
     }
@@ -229,62 +242,213 @@ const fetchUserProfile = async () => {
 
 const uploadAvatar = async (file) => {
   if (!file) {
-    console.error('No file provided for upload')
+    console.error('No file provided for upload.')
     alert('Please select a file to upload.')
-    return
+    return null
   }
 
-  const userId = (await supabase.auth.getUser()).data.user?.id
-  if (!userId) {
-    console.error('User  is not logged in')
-    alert('User  is not logged in. Please log in to upload an avatar.')
-    return
-  }
+  try {
+    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif']
+    const MAX_SIZE = 5 * 1024 * 1024
 
-  const fileName = `${userId}-${Date.now()}.${file.name.split('.').pop()}`
-  const AVATAR_BUCKET = import.meta.env.VITE_APP_AVATAR_BUCKET || 'avatars' // Use the environment variable
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      alert('Invalid file type. Only JPEG, PNG, and GIF are allowed.')
+      return null
+    }
 
-  const { data, error } = await supabase.storage.from(AVATAR_BUCKET).upload(fileName, file)
+    if (file.size > MAX_SIZE) {
+      alert('File is too large. Maximum size is 5MB.')
+      return null
+    }
 
-  if (error) {
-    console.error('Error uploading avatar:', error.message)
-    alert('Failed to upload avatar. Please try again.')
-    return
-  }
+    const {
+      data: { user },
+      error: authError
+    } = await supabase.auth.getUser()
 
-  const { data: publicUrlData } = supabase.storage.from(AVATAR_BUCKET).getPublicUrl(data.path)
+    if (authError || !user) {
+      console.error('User not logged in:', authError)
+      alert('User is not logged in. Please log in to upload an avatar.')
+      return null
+    }
 
-  if (publicUrlData.publicUrl) {
-    console.log('Avatar uploaded successfully. URL:', publicUrlData.publicUrl)
-    userProfile.value.avatar = publicUrlData.publicUrl // Update the user profile with the new avatar URL
+    const userId = user.id
+    const fileName = `${userId}-${Date.now()}.${file.name.split('.').pop().toLowerCase()}`
+    const AVATAR_BUCKET = 'avatars'
+    const FOLDER_NAME = 'profile'
+    const filePath = `${FOLDER_NAME}/${fileName}`
+
+    const { error: uploadError } = await supabase.storage
+      .from(AVATAR_BUCKET)
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: true
+      })
+
+    if (uploadError) {
+      console.error('Error uploading avatar:', uploadError.message)
+      alert('Failed to upload avatar. Please try again.')
+      return null
+    }
+
+    const { data: urlData } = supabase.storage.from(AVATAR_BUCKET).getPublicUrl(filePath)
+
+    const avatarUrl = urlData.publicUrl
+
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({
+        avatar: avatarUrl
+      })
+      .eq('user_id', userId)
+      .select()
+
+    if (updateError) {
+      console.error('Error updating user avatar in database:', updateError.message)
+      alert('Failed to save avatar to profile. Please try again.')
+      return null
+    }
+
+    userProfile.value.avatar = avatarUrl
+
+    console.log('Avatar uploaded successfully. URL:', avatarUrl)
+
+    return avatarUrl
+  } catch (error) {
+    console.error('Unexpected error:', error)
+    alert('An unexpected error occurred. Please try again.')
+    return null
   }
 }
 
-const onAvatarChange = (files) => {
+const onAvatarChange = async (event) => {
+  const files = event.target.files
   if (files && files.length > 0) {
     const file = files[0]
-    const validFileTypes = ['image/jpeg', 'image/png', 'image/bmp']
-    if (validFileTypes.includes(file.type)) {
-      selectedFile.value = file
-      selectedFilePreview.value = URL.createObjectURL(file)
-      uploadAvatar(file)
-    } else {
-      alert('Please select a valid image file (JPG, PNG, BMP, JPEG).')
+    console.log('Selected file:', file)
+
+    selectedFile.value = file
+
+    const uploadedAvatarUrl = await uploadAvatar(file)
+
+    if (uploadedAvatarUrl) {
+      userProfile.value.avatar = uploadedAvatarUrl
     }
   } else {
-    alert('Please select a valid image file.')
+    alert('No file selected. Please choose an image file.')
+  }
+}
+
+const uploadBackground = async (file) => {
+  if (!file) {
+    console.error('No file provided for upload.')
+    alert('Please select a file to upload.')
+    return null
+  }
+
+  try {
+    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+    const MAX_SIZE = 10 * 1024 * 1024
+
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      alert('Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.')
+      return null
+    }
+
+    if (file.size > MAX_SIZE) {
+      alert('File is too large. Maximum size is 10MB.')
+      return null
+    }
+
+    const {
+      data: { user },
+      error: authError
+    } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      console.error('User not logged in:', authError)
+      alert('User is not logged in. Please log in to upload a background.')
+      return null
+    }
+
+    const userId = user.id
+    const fileName = `background-${userId}-${Date.now()}.${file.name.split('.').pop().toLowerCase()}`
+    const BACKGROUND_BUCKET = 'backgrounds'
+    const FOLDER_NAME = 'back'
+    const filePath = `${FOLDER_NAME}/${fileName}`
+
+    const { error: uploadError } = await supabase.storage
+      .from(BACKGROUND_BUCKET)
+      .upload(filePath, file, {
+        cacheControl: '31536000',
+        upsert: true
+      })
+
+    if (uploadError) {
+      console.error('Error uploading background:', uploadError.message)
+      alert('Failed to upload background. Please try again.')
+      return null
+    }
+
+    const { data: urlData } = supabase.storage.from(BACKGROUND_BUCKET).getPublicUrl(filePath)
+
+    const backgroundUrl = urlData.publicUrl
+
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({
+        background: backgroundUrl
+      })
+      .eq('user_id', userId)
+      .select()
+
+    if (updateError) {
+      console.error('Error updating user background in database:', updateError.message)
+      alert('Failed to save background to profile. Please try again.')
+      return null
+    }
+
+    userProfile.value.background = backgroundUrl
+
+    console.log('Background uploaded successfully. URL:', backgroundUrl)
+
+    return backgroundUrl
+  } catch (error) {
+    console.error('Unexpected background upload error:', error)
+    alert('An unexpected error occurred while uploading background. Please try again.')
+    return null
+  }
+}
+
+const onBackgroundChange = async (event) => {
+  const files = event.target.files
+  if (files && files.length > 0) {
+    const file = files[0]
+
+    try {
+      const uploadedBackgroundUrl = await uploadBackground(file)
+
+      if (uploadedBackgroundUrl) {
+        userProfile.value.background = uploadedBackgroundUrl
+      }
+    } catch (error) {
+      console.error('Background upload failed:', error)
+      alert('Failed to upload background. Please try again.')
+    }
+  } else {
+    alert('No file selected. Please choose an image file.')
   }
 }
 
 const saveProfileAndUploadAvatar = async () => {
   loading.value = true
   await saveProfile()
-
-  // Save expertise to Supabase
   await saveExpertiseToSupabase()
-
   if (selectedFile.value) {
     await uploadAvatar(selectedFile.value)
+  }
+  if (selectedFile.value) {
+    await uploadBackground(selectedFile.value)
   }
 
   dialog.value = false
@@ -301,7 +465,7 @@ onMounted(() => {
     <template #content>
       <v-container class="profile-container d-flex justify-center pa-0">
         <v-card max-width="900" class="profile-card">
-          <v-img src="/cover.jpg" class="background-img" height="250px" cover></v-img>
+          <v-img :src="userProfile.background" class="background-img" height="250px" cover></v-img>
 
           <v-container class="profile-header">
             <v-avatar class="profile-img" size="140">
@@ -398,7 +562,7 @@ onMounted(() => {
                       <v-row dense class="d-flex justify-center">
                         <v-col cols="12" md="6">
                           <v-file-input
-                            accept="image/png, image/jpeg, image/bmp, image/jpg"
+                            accept="image/*"
                             placeholder="Pick an avatar"
                             prepend-icon="mdi-camera"
                             variant="outlined"
@@ -490,6 +654,17 @@ onMounted(() => {
                           placeholder="Start typing to search..."
                           @change="updateExpertise"
                         />
+                      </v-row>
+                      <v-row dense class="d-flex justify-center">
+                        <v-file-input
+                          accept="image/*"
+                          placeholder="Pick an avatar"
+                          prepend-icon="mdi-camera"
+                          variant="outlined"
+                          label="Upload Background"
+                          @change="onBackgroundChange"
+                          density="compact"
+                        ></v-file-input>
                       </v-row>
                     </v-card-text>
 
