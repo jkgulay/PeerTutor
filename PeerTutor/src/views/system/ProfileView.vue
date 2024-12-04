@@ -13,6 +13,8 @@ supabase.auth.onAuthStateChange((event, session) => {
 const dialog = ref(false)
 const router = useRouter()
 const selectedFile = ref(null)
+const selectedBackgroundFile = ref(null)
+
 const loading = ref(false)
 
 const expertiseOptions = [
@@ -424,6 +426,7 @@ const onBackgroundChange = async (event) => {
   const files = event.target.files
   if (files && files.length > 0) {
     const file = files[0]
+    selectedBackgroundFile.value = file
 
     try {
       const uploadedBackgroundUrl = await uploadBackground(file)
@@ -447,8 +450,8 @@ const saveProfileAndUploadAvatar = async () => {
   if (selectedFile.value) {
     await uploadAvatar(selectedFile.value)
   }
-  if (selectedFile.value) {
-    await uploadBackground(selectedFile.value)
+  if (selectedBackgroundFile.value) {
+    await uploadBackground(selectedBackgroundFile.value)
   }
 
   dialog.value = false
