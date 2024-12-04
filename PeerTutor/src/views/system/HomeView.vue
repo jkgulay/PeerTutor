@@ -15,7 +15,7 @@ const fetchTutors = async () => {
   const { data, error } = await supabase
     .from('users')
     .select(
-      'user_id, firstname, lastname, email, avatar, occupation, bio, role, rating, social_links1, social_links2, availability, expertise'
+      'user_id, firstname, lastname, email, avatar, occupation, bio, role, social_links1, social_links2, availability, expertise'
     )
     .eq('role', 'Tutor')
     .eq('availability', true)
@@ -26,6 +26,20 @@ const fetchTutors = async () => {
     tutors.value = data
   }
   loading.value = false
+}
+
+const fetchSubjects = async () => {
+  loading.value = true
+  const {data, error} = await supabase
+    .from('subjects')
+    .select(
+      'subject_name'
+    )
+    .eq('id')
+    if(error){
+      console.error('Error fetching subjects:', error)
+      fetchSubjects.value = data
+    }
 }
 
 const filteredTutors = computed(() =>
@@ -104,6 +118,7 @@ const sendEmail = async (tutorEmail) => {
 
 onMounted(() => {
   fetchTutors()
+  fetchSubjects()
   initClient()
 })
 

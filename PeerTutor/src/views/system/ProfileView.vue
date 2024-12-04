@@ -4,11 +4,16 @@ import HomeLayout from '@/components/layout/HomeLayout.vue'
 import { useRouter } from 'vue-router'
 import { supabase } from '@/utils/supabase'
 
+supabase.auth.onAuthStateChange((event, session) => {
+  if (!session) {
+    router.replace({ name: 'login' })
+  }
+})
+
 const dialog = ref(false)
 const router = useRouter()
 const selectedFile = ref(null)
 const loading = ref(false)
-const selectedFilePreview = ref(null)
 
 const expertiseOptions = [
   'Math',
@@ -114,7 +119,7 @@ const userProfile = ref({
   firstname: '',
   lastname: '',
   email: '',
-  avatar: 'https://randomuser.me/api/portraits/lego/1.jpg',
+  avatar: '',
   role: '',
   bio: 'This is my Bio!',
   expertise: [],
@@ -159,7 +164,8 @@ const saveProfile = async () => {
         expertise: userProfile.value.expertise,
         availability: userProfile.value.availability,
         social_links1: userProfile.value.social_links1,
-        social_links2: userProfile.value.social_links2
+        social_links2: userProfile.value.social_links2,
+        background: userProfile.value.background
       })
       .eq('user_id', userProfile.value.user_id)
 
@@ -198,7 +204,7 @@ const fetchUserProfile = async () => {
     const { data, error: profileError } = await supabase
       .from('users')
       .select(
-        'user_id, firstname, lastname, email, avatar, occupation, role, bio, expertise, availability, social_links1, social_links2'
+        'user_id, firstname, lastname, email, avatar, occupation, role, bio, expertise, background, availability, social_links1, social_links2'
       )
       .eq('user_id', user.id)
       .single()
@@ -211,14 +217,15 @@ const fetchUserProfile = async () => {
         firstname: data.firstname || '',
         lastname: data.lastname || '',
         email: data.email || '',
-        avatar: data.avatar || 'https://randomuser.me/api/portraits/lego/1.jpg',
+        avatar: data.avatar || '',
         role: data.role || '',
         occupation: data.occupation || '',
         bio: data.bio || '',
         expertise: data.expertise || [],
         social_links1: data.social_links1 || '',
         social_links2: data.social_links2 || '',
-        availability: data.availability || false
+        availability: data.availability || false,
+        background: data.background || ''
       }
       selectedExpertise.value = [...userProfile.value.expertise]
     }
@@ -229,66 +236,86 @@ const fetchUserProfile = async () => {
 
 const uploadAvatar = async (file) => {
   if (!file) {
-    console.error('No file provided for upload')
-    alert('Please select a file to upload.')
-    return
+    console.error('No file provided for upload.');
+    alert('Please select a file to upload.');
+    return;
   }
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const userId = user.id;
+    if (authError || !userId) {
+      console.error('User not logged in:', authError);
+      alert('User is not logged in. Please log in to upload an avatar.');
+      return;
+    }
 
-  const userId = (await supabase.auth.getUser()).data.user?.id
-  if (!userId) {
-    console.error('User  is not logged in')
-    alert('User  is not logged in. Please log in to upload an avatar.')
-    return
-  }
+    const fileName = `${userId}-${Date.now()}.${file.name.split('.').pop().toLowerCase()}`;
+    const AVATAR_BUCKET = 'avatars';
+    const FOLDER_NAME = 'profile';
 
-  const fileName = `${userId}-${Date.now()}.${file.name.split('.').pop()}`
-  const AVATAR_BUCKET = import.meta.env.VITE_APP_AVATAR_BUCKET || 'avatars' // Use the environment variable
+    // Upload the file to Supabase storage
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from(AVATAR_BUCKET)
+      .upload(`${FOLDER_NAME}/${fileName}`, file);
 
-  const { data, error } = await supabase.storage.from(AVATAR_BUCKET).upload(fileName, file)
+    if (uploadError) {
+      console.error('Error uploading avatar:', uploadError.message);
+      alert('Failed to upload avatar. Please try again.');
+      return;
+    }
 
-  if (error) {
-    console.error('Error uploading avatar:', error.message)
-    alert('Failed to upload avatar. Please try again.')
-    return
-  }
+    const { data: publicUrlData, error: publicUrlError } = await supabase.storage
+      .from(AVATAR_BUCKET)
+      .getPublicUrl(uploadData.path);
 
-  const { data: publicUrlData } = supabase.storage.from(AVATAR_BUCKET).getPublicUrl(data.path)
+    if (publicUrlError || !publicUrlData?.publicUrl) {
+      console.error('Error generating public URL:', publicUrlError);
+      alert('Failed to retrieve the uploaded avatar URL. Please try again.');
+      return;
+    }
 
-  if (publicUrlData.publicUrl) {
-    console.log('Avatar uploaded successfully. URL:', publicUrlData.publicUrl)
-    userProfile.value.avatar = publicUrlData.publicUrl // Update the user profile with the new avatar URL
+    const avatarUrl = publicUrlData.publicUrl;
+    console.log('Avatar uploaded successfully. URL:', avatarUrl);
+
+    // Update user avatar in the database
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({ avatar: avatarUrl })
+      .eq('user_id', userId);
+
+    if (updateError) {
+      console.error('Error updating user avatar in database:', updateError.message);
+      alert('Failed to save avatar to profile. Please try again.');
+      return;
+    }
+
+    alert('Avatar uploaded and updated successfully!');
+  } catch (error) {
+    console.error('Unexpected error:', error);
+    alert('An unexpected error occurred. Please try again.');
   }
 }
 
-const onAvatarChange = (files) => {
+const onAvatarChange = (event) => {
+  const files = event.target.files
   if (files && files.length > 0) {
     const file = files[0]
-    const validFileTypes = ['image/jpeg', 'image/png', 'image/bmp']
-    if (validFileTypes.includes(file.type)) {
-      selectedFile.value = file
-      selectedFilePreview.value = URL.createObjectURL(file)
-      uploadAvatar(file)
-    } else {
-      alert('Please select a valid image file (JPG, PNG, BMP, JPEG).')
-    }
+    console.log('Selected file:', file)
+    uploadAvatar(file)
   } else {
-    alert('Please select a valid image file.')
+    alert('No file selected. Please choose an image file.')
   }
 }
 
 const saveProfileAndUploadAvatar = async () => {
-  loading.value = true
-  await saveProfile()
-
-  // Save expertise to Supabase
-  await saveExpertiseToSupabase()
-
+  loading.value = true;
+  await saveProfile(); 
+  await saveExpertiseToSupabase();
   if (selectedFile.value) {
-    await uploadAvatar(selectedFile.value)
+    await uploadAvatar(selectedFile.value);
   }
-
-  dialog.value = false
-  loading.value = false
+  dialog.value = false;
+  loading.value = false;
 }
 
 onMounted(() => {
@@ -301,7 +328,7 @@ onMounted(() => {
     <template #content>
       <v-container class="profile-container d-flex justify-center pa-0">
         <v-card max-width="900" class="profile-card">
-          <v-img src="/cover.jpg" class="background-img" height="250px" cover></v-img>
+          <v-img :src="userProfile.background" class="background-img" height="250px" cover></v-img>
 
           <v-container class="profile-header">
             <v-avatar class="profile-img" size="140">
@@ -398,7 +425,7 @@ onMounted(() => {
                       <v-row dense class="d-flex justify-center">
                         <v-col cols="12" md="6">
                           <v-file-input
-                            accept="image/png, image/jpeg, image/bmp, image/jpg"
+                            accept="image/*"
                             placeholder="Pick an avatar"
                             prepend-icon="mdi-camera"
                             variant="outlined"
