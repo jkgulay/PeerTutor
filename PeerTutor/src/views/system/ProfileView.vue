@@ -766,7 +766,6 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-
 }
 .background-img {
   object-fit: cover;
@@ -827,6 +826,4 @@ onMounted(() => {
   text-transform: none;
   font-weight: 500;
 }
-
-
 </style>

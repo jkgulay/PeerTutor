@@ -19,7 +19,6 @@ const fetchTutors = async () => {
       .eq('role', 'Tutor')
       .is('availability', true)
 
-
     if (tutorsError) {
       console.error('Error fetching tutors:', tutorsError)
       return
@@ -112,7 +111,7 @@ const openChat = (tutor) => {
 
   setTimeout(() => {
     console.log('Chat with:', tutor.firstname)
-    
+
     loading.value[tutor.id] = false
   }, 1000)
 }
@@ -121,7 +120,7 @@ const openChat = (tutor) => {
 <template>
   <HomeLayout @search-query="searchQuery = $event">
     <template #content>
-      <v-container fluid class="d-flex flex-column" >
+      <v-container fluid class="d-flex flex-column">
         <v-row class="py-10">
           <v-col
             v-for="tutor in filteredTutors"
