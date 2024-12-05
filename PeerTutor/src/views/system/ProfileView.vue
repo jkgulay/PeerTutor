@@ -699,6 +699,8 @@ onMounted(() => {
                   large
                   :style="buttonStyle"
                   @click="toggleAvailability"
+                  :color="userProfile.availability ? 'success' : 'error'"
+
                 >
                   {{ userProfile.availability ? 'Available' : 'Not Available' }}
                 </v-btn>
