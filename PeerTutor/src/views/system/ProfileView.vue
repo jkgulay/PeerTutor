@@ -9,12 +9,11 @@ supabase.auth.onAuthStateChange((event, session) => {
     router.replace({ name: 'login' })
   }
 })
-
+const reviews = ref([])
 const dialog = ref(false)
 const router = useRouter()
 const selectedFile = ref(null)
 const selectedBackgroundFile = ref(null)
-
 const loading = ref(false)
 
 const expertiseOptions = [
@@ -202,8 +201,10 @@ const fetchUserProfile = async () => {
       data: { user },
       error: authError
     } = await supabase.auth.getUser()
+
     if (authError) {
       console.error('Error fetching authenticated user:', authError)
+      router.replace({ name: 'login' })
       return
     }
 
@@ -218,33 +219,107 @@ const fetchUserProfile = async () => {
     const { data, error: profileError } = await supabase
       .from('users')
       .select(
-        'user_id, firstname, lastname, email, avatar, occupation, role, bio, expertise, background, availability, social_links1, social_links2'
+        'id, user_id, firstname, lastname, email, avatar, occupation, role, bio, expertise, background, availability, social_links1, social_links2'
       )
       .eq('user_id', user.id)
       .single()
 
     if (profileError) {
       console.error('Error fetching user profile:', profileError)
-    } else if (data) {
-      userProfile.value = {
-        user_id: data.user_id,
-        firstname: data.firstname || '',
-        lastname: data.lastname || '',
-        email: data.email || '',
-        avatar: data.avatar || '',
-        role: data.role || '',
-        occupation: data.occupation || '',
-        bio: data.bio || '',
-        expertise: data.expertise || [],
-        social_links1: data.social_links1 || '',
-        social_links2: data.social_links2 || '',
-        availability: data.availability || false,
-        background: data.background || ''
-      }
-      selectedExpertise.value = [...userProfile.value.expertise]
+      return
     }
+
+    if (!data) {
+      console.error('No user profile found')
+      return
+    }
+
+    // Ensure userProfile is populated before fetching reviews
+    userProfile.value = {
+      id: data.id,
+      user_id: data.user_id,
+      firstname: data.firstname || '',
+      lastname: data.lastname || '',
+      email: data.email || '',
+      avatar: data.avatar || '',
+      role: data.role || '',
+      occupation: data.occupation || '',
+      bio: data.bio || '',
+      expertise: data.expertise || [],
+      social_links1: data.social_links1 || '',
+      social_links2: data.social_links2 || '',
+      availability: data.availability || false,
+      background: data.background || ''
+    }
+
+    selectedExpertise.value = [...userProfile.value.expertise]
+
+    console.log('User profile fetched:', userProfile.value)
+
+    // Fetch reviews immediately after populating user profile
+    await fetchReviews(userProfile.value.id)
   } catch (err) {
     console.error('Unexpected error:', err)
+  }
+}
+
+const fetchReviews = async (userId) => {
+  if (!userId) {
+    return
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('reviews')
+      .select(
+        `
+        review_text, 
+        rating, 
+        created_at,
+        users!reviews_reviewer_id_fkey (
+          avatar,
+          firstname,
+          lastname
+        )
+      `
+      )
+      .eq('tutor_id', userId)
+
+    if (error) {
+      console.error('Error fetching reviews:', error)
+      return
+    }
+
+    reviews.value = data || []
+    console.log('Fetched reviews:', reviews.value)
+  } catch (err) {
+    console.error('Unexpected error fetching reviews:', err)
+  }
+}
+
+const formatDate = (dateString, options = {}) => {
+  if (!dateString) return 'Unknown date'
+
+  const defaultOptions = {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  }
+
+  const mergedOptions = { ...defaultOptions, ...options }
+
+  try {
+    const date = new Date(dateString)
+
+    // Check if the date is valid
+    if (isNaN(date.getTime())) {
+      return 'Invalid date'
+    }
+
+    return new Intl.DateTimeFormat('en-US', mergedOptions).format(date)
+  } catch (error) {
+    console.error('Error formatting date:', error)
+    return 'Unknown date'
   }
 }
 
@@ -463,6 +538,8 @@ const saveProfileAndUploadAvatar = async () => {
 
 onMounted(() => {
   fetchUserProfile()
+  fetchReviews()
+  formatDate()
 })
 </script>
 
@@ -728,21 +805,76 @@ onMounted(() => {
             <v-divider class="my-4"></v-divider>
             <v-row class="profile-actions">
               <v-col cols="12">
-                <v-card class="action-item" outlined elevation="0">
-                  <h5>Ready for work</h5>
-                  <p>Show recruiters that you're ready for work</p>
-                </v-card>
-              </v-col>
-              <v-col cols="12">
-                <v-card class="action-item" outlined elevation="0">
-                  <h5>Share posts</h5>
-                  <p>Share latest news to get connected with others</p>
-                </v-card>
-              </v-col>
-              <v-col cols="12">
-                <v-card class="action-item" outlined elevation="0">
-                  <h5>Update</h5>
-                  <p>Keep your profile updated so that the recruiters know</p>
+                <v-card class="review-card" elevation="1">
+                  <v-card-title class="d-flex justify-space-between align-center pa-4">
+                    <div class="d-flex align-center">
+                      <span class="text-h6 font-weight-bold">User Reviews</span>
+                    </div>
+                    <v-chip color="teal-lighten-1" variant="outlined" small>
+                      {{ reviews.length }} Reviews
+                    </v-chip>
+                  </v-card-title>
+
+                  <v-divider></v-divider>
+
+                  <template v-if="reviews.length > 0">
+                    <v-list lines="two" class="py-0">
+                      <template v-for="(review, index) in reviews" :key="index">
+                        <v-list-item class="px-4 py-3">
+                          <template v-slot:prepend>
+                            <v-avatar size="40" class="mr-3">
+                              <v-img
+                                v-if="review.users.avatar"
+                                :src="review.users.avatar"
+                                alt="Reviewer Avatar"
+                              ></v-img>
+                              <v-avatar v-else color="teal-darken-1" size="40">
+                                <v-icon color="white">mdi-account</v-icon>
+                              </v-avatar>
+                            </v-avatar>
+                          </template>
+
+                          <v-list-item-title class="d-flex align-center mb-2">
+                            <span class="font-weight-medium mr-2">
+                              {{ review.users.firstname }} {{ review.users.lastname }}
+                            </span>
+                            <v-rating
+                              :model-value="review.rating"
+                              color="yellow-darken-2"
+                              half-increments
+                              readonly
+                              size="small"
+                              class="mr-2"
+                            ></v-rating>
+                            <v-spacer></v-spacer>
+                            <span class="text-caption text-medium-emphasis">
+                              {{ formatDate(review.created_at) }}
+                            </span>
+                          </v-list-item-title>
+
+                          <v-list-item-subtitle class="text-wrap">
+                            {{ review.review_text }}
+                          </v-list-item-subtitle>
+                        </v-list-item>
+
+                        <v-divider
+                          v-if="index < reviews.length - 1"
+                          :key="`divider-${index}`"
+                        ></v-divider>
+                      </template>
+                    </v-list>
+                  </template>
+
+                  <v-card-text
+                    v-else
+                    class="text-center d-flex flex-column align-center justify-center pa-6"
+                  >
+                    <v-icon color="grey-lighten-1" size="64" class="mb-4">
+                      mdi-comment-text-outline
+                    </v-icon>
+                    <p class="text-h6 text-medium-emphasis">No reviews yet</p>
+                    <p class="text-body-2 text-disabled">Be the first to leave a review</p>
+                  </v-card-text>
                 </v-card>
               </v-col>
             </v-row>
