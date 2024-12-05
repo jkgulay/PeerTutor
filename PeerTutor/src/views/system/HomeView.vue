@@ -11,21 +11,49 @@ const loading = ref(false)
 const selectedExpertise = ref([])
 
 const fetchTutors = async () => {
-  loading.value = true
-  const { data, error } = await supabase
-    .from('users')
-    .select(
-      'user_id, firstname, lastname, email, avatar, occupation, bio, role, social_links1, social_links2, availability, expertise'
-    )
-    .eq('role', 'Tutor')
-    .eq('availability', true)
+  try {
+    // First, fetch tutors
+    const { data: tutorsData, error: tutorsError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('role', 'Tutor')
+      .is('availability', true)
 
-  if (error) {
-    console.error('Error fetching tutors:', error)
-  } else {
-    tutors.value = data
+
+    if (tutorsError) {
+      console.error('Error fetching tutors:', tutorsError)
+      return
+    }
+
+    const tutorsWithRatings = await Promise.all(
+      tutorsData.map(async (tutor) => {
+        // Calculate average rating
+        const { data: reviewsData, error: reviewsError } = await supabase
+          .from('reviews')
+          .select('rating')
+          .eq('tutor_id', tutor.id)
+
+        if (reviewsError) {
+          console.error(`Error fetching reviews for tutor ${tutor.id}:`, reviewsError)
+          return { ...tutor, rating: 0, reviewCount: 0 }
+        }
+
+        const ratings = reviewsData.map((review) => review.rating)
+        const averageRating =
+          ratings.length > 0 ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length : 0
+
+        return {
+          ...tutor,
+          rating: Number(averageRating.toFixed(1)),
+          reviewCount: ratings.length
+        }
+      })
+    )
+
+    tutors.value = tutorsWithRatings
+  } catch (error) {
+    console.error('Unexpected error:', error)
   }
-  loading.value = false
 }
 
 const fetchSubjects = async () => {
@@ -80,14 +108,20 @@ onMounted(() => {
 })
 
 const openChat = (tutor) => {
-  console.log('Chat with:', tutor.firstname)
+  loading.value[tutor.id] = true
+
+  setTimeout(() => {
+    console.log('Chat with:', tutor.firstname)
+    
+    loading.value[tutor.id] = false
+  }, 1000)
 }
 </script>
 
 <template>
   <HomeLayout @search-query="searchQuery = $event">
     <template #content>
-      <v-container fluid class="d-flex flex-column" style="min-height: 100vh">
+      <v-container fluid class="d-flex flex-column" >
         <v-row class="py-10">
           <v-col
             v-for="tutor in filteredTutors"
@@ -186,7 +220,7 @@ const openChat = (tutor) => {
                 <v-col cols="auto">
                   <v-btn
                     class="text-white"
-                    :loading="loading"
+                    :loading="loading[tutor.id] || false"
                     color="teal-darken-2"
                     size="small"
                     variant="elevated"
@@ -201,14 +235,19 @@ const openChat = (tutor) => {
                 </v-col>
 
                 <!-- Rating -->
-                <v-col cols="auto" class="d-flex justify-end">
+                <v-col cols="auto" class="d-flex justify-end align-center">
                   <v-rating
-                    hover
+                    :model-value="tutor.rating"
                     :length="5"
                     :size="28"
-                    :model-value="tutor.rating"
+                    color="grey-lighten-1"
                     active-color="teal-darken-2"
+                    readonly
+                    half-increments
                   />
+                  <span class="ml-2 text-caption text-grey-400">
+                    ({{ tutor.rating }} / 5 - {{ tutor.reviewCount }} reviews)
+                  </span>
                 </v-col>
               </v-row>
             </v-card>
@@ -235,7 +274,7 @@ const openChat = (tutor) => {
 }
 
 .tutor-card {
-  min-height: 100%; 
+  min-height: 100%;
   display: flex;
   flex-direction: column;
 }
