@@ -2,7 +2,9 @@
 import HomeLayout from '@/components/layout/HomeLayout.vue'
 import { ref, onMounted, computed } from 'vue'
 import { supabase } from '@/utils/supabase'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const searchQuery = ref('')
 const tutors = ref([])
 const loading = ref(false)
@@ -65,6 +67,13 @@ const openLink = (url) => {
   }
 }
 
+const navigateToTutorProfile = (userId) => {
+  router.push({
+    name: 'tutor-profile',
+    params: { userId: userId }
+  })
+}
+
 onMounted(() => {
   fetchTutors()
   fetchSubjects()
@@ -87,12 +96,15 @@ const openChat = (tutor) => {
                 <!-- Avatar -->
                 <v-col cols="auto">
                   <v-avatar size="64">
-                    <v-img :src="tutor.avatar"></v-img>
+                    <v-img :src="tutor.avatar" class="clickable" @click="navigateToTutorProfile(tutor.user_id)"></v-img>
                   </v-avatar>
                 </v-col>
                 <v-col>
                   <div>
-                    <h3 class="text-h5 text-white mb-1">
+                    <h3
+                      class="text-h5 text-white mb-1 clickable"
+                      @click="navigateToTutorProfile(tutor.user_id)"
+                    >
                       {{ tutor.firstname }} {{ tutor.lastname }}
                     </h3>
                     <p class="text-body-2 text-grey-400">{{ tutor.occupation }}</p>
@@ -197,4 +209,15 @@ const openChat = (tutor) => {
   text-transform: none;
   font-weight: 500;
 }
+
+.clickable {
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.clickable:hover {
+  color: #80cbc4 !important;
+}
+
+
 </style>

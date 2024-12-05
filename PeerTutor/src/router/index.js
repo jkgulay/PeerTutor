@@ -5,6 +5,7 @@ import RegisterView from '@/views/auth/RegisterView.vue';
 import HomeView from '@/views/system/HomeView.vue';
 import ProfileView from '@/views/system/ProfileView.vue';
 
+
 const routes = [
   {
     path: '/',
@@ -36,6 +37,14 @@ const routes = [
     name: 'profile',
     component: ProfileView,
     meta: { requiresAuth: true },
+  },
+
+  {
+    path: '/tutor-profile/:userId',
+    name: 'tutor-profile',
+    component: () => import('@/views/system/TutorProfileView.vue'),
+    props: true,
+    meta: { requiresAuth: true }
   },
 ];
 
