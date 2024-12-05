@@ -159,6 +159,12 @@ const saveProfile = async () => {
     loading.value = false
     return
   }
+  loading.value = true
+  if (!userProfile.value.firstname || !userProfile.value.lastname || !userProfile.value.email) {
+    alert('Please fill in all required fields.')
+    loading.value = false
+    return
+  }
   try {
     const { error } = await supabase
       .from('users')
@@ -449,9 +455,6 @@ const saveProfileAndUploadAvatar = async () => {
   await saveExpertiseToSupabase()
   if (selectedFile.value) {
     await uploadAvatar(selectedFile.value)
-  }
-  if (selectedBackgroundFile.value) {
-    await uploadBackground(selectedBackgroundFile.value)
   }
 
   dialog.value = false

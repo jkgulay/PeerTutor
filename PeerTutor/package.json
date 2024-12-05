@@ -15,6 +15,7 @@
     "ably": "^2.5.0",
     "gapi-client": "^0.0.3",
     "pinia": "^2.1.7",
+    "snackbar": "^1.1.0",
     "vee-validate": "^4.13.2",
     "vue": "^3.4.29",
     "vue-router": "^4.3.3",
