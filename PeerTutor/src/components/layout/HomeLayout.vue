@@ -203,14 +203,14 @@ onMounted(() => {
           <v-divider></v-divider>
 
           <v-list density="compact" nav>
-            <v-list-item prepend-icon="mdi-home">
+            <v-list-item prepend-icon="mdi-home" class="clickable">
               <RouterLink class="text-white text-decoration-none" to="/home">Home</RouterLink>
             </v-list-item>
-            <v-list-item prepend-icon="mdi-account-box">
+            <v-list-item prepend-icon="mdi-account-box" class="clickable">
               <RouterLink class="text-white text-decoration-none" to="/profile">Profile</RouterLink>
             </v-list-item>
             <!-- Logout Button -->
-            <v-list-item prepend-icon="mdi-logout" @click="onLogout">
+            <v-list-item prepend-icon="mdi-logout" @click="onLogout" class="clickable">
               <span class="text-white">Logout</span>
             </v-list-item>
           </v-list>
@@ -239,3 +239,14 @@ onMounted(() => {
     </v-app>
   </v-responsive>
 </template>
+
+<style scoped>
+.clickable {
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.clickable:hover {
+  color: #80cbc4 !important;
+}
+</style>

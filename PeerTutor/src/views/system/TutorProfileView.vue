@@ -81,24 +81,19 @@ onMounted(() => {
     <template #content>
       <v-container class="profile-container d-flex justify-center pa-0">
         <v-card max-width="900" class="profile-card">
-          <v-img 
-            :src="tutorProfile.background || 'default-background-url'" 
-            class="background-img" 
-            height="250px" 
+          <v-img
+            :src="tutorProfile.background || 'default-background-url'"
+            class="background-img"
+            height="250px"
             cover
           ></v-img>
 
           <v-container class="profile-header">
             <v-avatar class="profile-img" size="140">
-              <v-img 
-                :src="tutorProfile.avatar || 'default-avatar-url'" 
-                alt="Profile Image"
-              ></v-img>
+              <v-img :src="tutorProfile.avatar || 'default-avatar-url'" alt="Profile Image"></v-img>
             </v-avatar>
             <div class="profile-info">
-              <h2 class="profile-name">
-                {{ tutorProfile.firstname }} {{ tutorProfile.lastname }}
-              </h2>
+              <h2 class="profile-name">{{ tutorProfile.firstname }} {{ tutorProfile.lastname }}</h2>
               <h3 class="profile-job">{{ tutorProfile.occupation }}</h3>
               <p class="profile-bio">{{ tutorProfile.bio }}</p>
             </div>
@@ -106,7 +101,7 @@ onMounted(() => {
 
           <v-card-text class="profile-details pa-4">
             <v-row class="profile-settings mb-4" justify="center">
-              <v-col cols="12" md="5" class="mb-2">
+              <v-col cols="12" md="4" class="mb-2">
                 <v-btn
                   block
                   color="primary"
@@ -120,7 +115,22 @@ onMounted(() => {
                   Contact
                 </v-btn>
               </v-col>
-              <v-col cols="12" md="5" class="mb-2">
+
+              <v-col cols="12" md="4" class="mb-2">
+                <v-btn
+                  block
+                  color="teal-darken-2"
+                  rounded
+                  large
+                  elevation="2"
+                  class="text-none font-weight-regular"
+                  prepend-icon="mdi-star"
+                  @click="openLink(`mailto:${tutorProfile.email}`)"
+                >
+                  Rate
+                </v-btn>
+              </v-col>
+              <v-col cols="12" md="2" class="mb-2">
                 <v-btn
                   block
                   outlined
@@ -134,7 +144,7 @@ onMounted(() => {
             </v-row>
 
             <v-divider></v-divider>
-            
+
             <v-row class="expertise mt-4">
               <v-col>
                 <h4 class="mb-3">Expertise</h4>
@@ -153,7 +163,7 @@ onMounted(() => {
             </v-row>
 
             <v-divider class="my-4"></v-divider>
-            
+
             <v-row class="social-links">
               <v-col cols="12" class="d-flex justify-center">
                 <v-btn
@@ -189,11 +199,12 @@ onMounted(() => {
 }
 
 .profile-card {
-  background-color: white;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px;
+  min-height: 400px;
+  min-width: 80%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
-
 .background-img {
   object-fit: cover;
   border-bottom: 5px solid #3f51b5;
@@ -210,7 +221,10 @@ onMounted(() => {
 }
 
 .profile-info {
-  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
 }
 
 .profile-name {
@@ -225,8 +239,11 @@ onMounted(() => {
 }
 
 .profile-bio {
-  font-size: 16px;
+  padding: 10px;
+  text-align: center;
   color: #9e9e9e;
+  font-style: italic;
+  max-width: 85%;
 }
 
 .expertise h4 {

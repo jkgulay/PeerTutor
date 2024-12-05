@@ -700,13 +700,11 @@ onMounted(() => {
                   :style="buttonStyle"
                   @click="toggleAvailability"
                   :color="userProfile.availability ? 'success' : 'error'"
-
                 >
                   {{ userProfile.availability ? 'Available' : 'Not Available' }}
                 </v-btn>
               </v-col>
             </v-row>
-
             <v-divider></v-divider>
             <v-row class="expertise mt-4">
               <v-col>
@@ -763,11 +761,13 @@ onMounted(() => {
 }
 
 .profile-card {
-  background-color: white;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px;
-}
+  min-height: 400px;
+  min-width: 80%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 
+}
 .background-img {
   object-fit: cover;
   border-bottom: 5px solid #3f51b5;
@@ -784,7 +784,10 @@ onMounted(() => {
 }
 
 .profile-info {
-  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
 }
 
 .profile-name {
@@ -799,8 +802,11 @@ onMounted(() => {
 }
 
 .profile-bio {
-  font-size: 16px;
+  padding: 10px;
+  text-align: center;
   color: #9e9e9e;
+  font-style: italic;
+  max-width: 85%;
 }
 
 .expertise h4 {
@@ -821,4 +827,6 @@ onMounted(() => {
   text-transform: none;
   font-weight: 500;
 }
+
+
 </style>

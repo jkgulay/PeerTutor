@@ -89,14 +89,28 @@ const openChat = (tutor) => {
     <template #content>
       <v-container fluid class="d-flex flex-column" style="min-height: 100vh">
         <v-row class="py-10">
-          <v-col v-for="tutor in filteredTutors" :key="tutor.user_id" cols="12" md="6">
-            <v-card color="#05161a" style="border-radius: 20px; padding: 16px">
+          <v-col
+            v-for="tutor in filteredTutors"
+            :key="tutor.user_id"
+            cols="12"
+            md="6"
+            class="d-flex"
+          >
+            <v-card
+              color="#05161a"
+              class="tutor-card d-flex flex-column"
+              style="border-radius: 20px; padding: 16px; width: 100%"
+            >
               <!-- Tutor Information and Social Media Icons -->
               <v-row class="mb-4" align="center">
                 <!-- Avatar -->
                 <v-col cols="auto">
                   <v-avatar size="64">
-                    <v-img :src="tutor.avatar" class="clickable" @click="navigateToTutorProfile(tutor.user_id)"></v-img>
+                    <v-img
+                      :src="tutor.avatar"
+                      class="clickable"
+                      @click="navigateToTutorProfile(tutor.user_id)"
+                    ></v-img>
                   </v-avatar>
                 </v-col>
                 <v-col>
@@ -141,9 +155,9 @@ const openChat = (tutor) => {
               </v-row>
 
               <!-- Description Section -->
-              <v-container class="py-2 px-0">
-                <p class="text-body-1 text-grey-300 mb-3">
-                  {{ tutor.bio }}
+              <v-container class="py-2 px-0 flex-grow-1">
+                <p class="text-body-1 text-grey-300 mb-3" style="min-height: 60px">
+                  {{ tutor.bio || 'No bio available' }}
                 </p>
               </v-container>
 
@@ -165,8 +179,9 @@ const openChat = (tutor) => {
                   </v-chip-group>
                 </v-col>
               </v-row>
+
               <!-- Button and Rating Section -->
-              <v-row align="center">
+              <v-row align="center" class="mt-auto">
                 <!-- Contact Tutor Button -->
                 <v-col cols="auto">
                   <v-btn
@@ -219,5 +234,9 @@ const openChat = (tutor) => {
   color: #80cbc4 !important;
 }
 
-
+.tutor-card {
+  min-height: 100%; 
+  display: flex;
+  flex-direction: column;
+}
 </style>
