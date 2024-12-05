@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.46.1",
+    "ably": "^2.5.0",
     "gapi-client": "^0.0.3",
     "pinia": "^2.1.7",
     "snackbar": "^1.1.0",

@@ -24,15 +24,11 @@ const isPasswordVisible = ref(false)
 // Reference to the form
 const refVForm = ref()
 
-// Login function
 const onSubmit = async () => {
-  // Reset form action state
   formAction.value = { ...formActionDefault }
 
-  // Turn on processing
   formAction.value.formProcess = true
 
-  // Attempt to sign in with Supabase
   const { data, error } = await supabase.auth.signInWithPassword({
     email: formData.value.email,
     password: formData.value.password

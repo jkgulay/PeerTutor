@@ -15,10 +15,15 @@ const router = useRouter()
 const onLogout = async () => {
   try {
     const { error } = await supabase.auth.signOut()
+
     if (error) {
       console.error('Error during logout:', error.message)
       return
     }
+
+    localStorage.clear()
+    sessionStorage.clear()
+
     router.replace({ name: 'login' })
   } catch (err) {
     console.error('Unexpected error during logout:', err)
