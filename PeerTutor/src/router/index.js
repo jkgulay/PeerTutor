@@ -1,4 +1,4 @@
-import { isAuthenticated } from '@/utils/supabase';
+import { isAuthenticated, supabase } from '@/utils/supabase';
 import { createRouter, createWebHistory } from 'vue-router';
 import LoginView from '@/views/auth/LoginView.vue';
 import RegisterView from '@/views/auth/RegisterView.vue';
@@ -55,5 +55,18 @@ router.beforeEach(async (to) => {
     return { name: 'home' };
   }
 });
+
+router.beforeEach(async (to, from, next) => {
+  const { data: { session } } = await supabase.auth.getSession()
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
+
+  if (requiresAuth && !session) {
+    next({ name: 'login' })
+  } else if (!requiresAuth && session) {
+    next({ name: 'home' })
+  } else {
+    next()
+  }
+})
 
 export default router;
