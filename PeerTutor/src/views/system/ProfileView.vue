@@ -780,7 +780,7 @@ onMounted(() => {
 }
 
 .profile-img {
-  border: 4px solid white;
+  border: 4px solid rgb(3, 71, 73);
 }
 
 .profile-info {
