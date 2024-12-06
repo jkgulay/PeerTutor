@@ -1,3 +1,35 @@
-<h2>The Peer Tutoring Platform </h2><p>is a web-based system designed to help students connect with peer tutors for academic assistance. The platform allows students to find tutors based on their specific subject needs, enabling them to book tutoring sessions seamlessly. 
-It offers features such as tutor profiles, real-time availability, a booking system, and a rating system to ensure high-quality tutoring experiences. 
-Tutors can manage their schedules, view session requests, and communicate directly with students through in-app messaging.</p>
+# PeerTutor
+
+This template should help get you started developing with Vue 3 in Vite.
+
+## Recommended IDE Setup
+
+[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+
+## Customize configuration
+
+See [Vite Configuration Reference](https://vitejs.dev/config/).
+
+## Project Setup
+
+```sh
+npm install
+```
+
+### Compile and Hot-Reload for Development
+
+```sh
+npm run dev
+```
+
+### Compile and Minify for Production
+
+```sh
+npm run build
+```
+
+### Lint with [ESLint](https://eslint.org/)
+
+```sh
+npm run lint
+```
