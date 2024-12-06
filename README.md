@@ -1,6 +1,10 @@
 # PeerTutor
 
-This template should help get you started developing with Vue 3 in Vite.
+PeerTutor is an innovative platform designed to connect students with skilled tutors in their academic fields. Whether you need help mastering a challenging topic or sharpening your skills, PeerTutor offers a seamless way to find the right guidance.
+
+With features like personalized tutor profiles, real-time ratings, and student reviews, PeerTutor ensures transparency and trust in every interaction. Our goal is to foster collaborative learning environments where students and tutors can thrive together, achieving academic excellence.
+
+PeerTutor isn't just about tutoring—it's about building a supportive community that empowers learners to reach their full potential.
 
 ## Recommended IDE Setup
 
