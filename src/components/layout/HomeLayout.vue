@@ -209,6 +209,11 @@ onMounted(() => {
             <v-list-item prepend-icon="mdi-account-box" class="clickable">
               <RouterLink class="text-white text-decoration-none" to="/profile">Profile</RouterLink>
             </v-list-item>
+            <v-list-item prepend-icon="mdi-message" class="clickable">
+              <RouterLink class="text-white text-decoration-none" to="/messages"
+                >Messages</RouterLink
+              >
+            </v-list-item>
             <!-- Logout Button -->
             <v-list-item prepend-icon="mdi-logout" @click="onLogout" class="clickable">
               <span class="text-white">Logout</span>
