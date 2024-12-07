@@ -1,4 +1,4 @@
-//import './assets/main.css'
+// import './assets/main.css'
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
@@ -13,15 +13,17 @@ import * as directives from 'vuetify/directives'
 import App from './App.vue'
 import router from './router'
 
-const vuetify = createVuetify({
-    icons: {
-        defaultSet: 'mdi', 
-      },
-    components,
-    directives,
-  })
-
 const app = createApp(App)
+
+app.config.warnHandler = () => {}
+
+const vuetify = createVuetify({
+  icons: {
+    defaultSet: 'mdi'
+  },
+  components,
+  directives
+})
 
 app.use(createPinia())
 app.use(router)
