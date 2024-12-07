@@ -4,20 +4,52 @@
       <h2>{{ selectedContact.name }}</h2>
     </div>
     <div class="chat-body">
-      <!-- Add chat messages dynamically -->
-      <div class="message">
-        <p>Hi, have you got the project report PDF?</p>
+      <!-- Render chat messages dynamically -->
+      <div
+        v-for="(message, index) in messages"
+        :key="index"
+        :class="['message', message.sender === 'user' ? 'sent' : 'received']"
+      >
+        <p>{{ message.text }}</p>
       </div>
     </div>
     <div class="chat-footer">
-      <input type="text" placeholder="Write Something..." />
+      <input v-model="newMessage" type="text" placeholder="Write Something..." />
+      <button @click="sendMessage">Send</button>
     </div>
   </div>
 </template>
 
 <script>
 export default {
-  props: ['selectedContact']
+  props: ['selectedContact'],
+  data() {
+    return {
+      messages: [
+        { sender: 'contact', text: 'Hi, have you got the project report PDF?' },
+        { sender: 'user', text: 'Yes, I’ll send it to you shortly.' }
+      ],
+      newMessage: ''
+    }
+  },
+  methods: {
+    sendMessage() {
+      if (this.newMessage.trim()) {
+        // Add the user's message
+        this.messages.push({ sender: 'user', text: this.newMessage })
+
+        // Add a hardcoded automatic reply
+        setTimeout(() => {
+          this.messages.push({
+            sender: 'contact',
+            text: 'Got it! Thanks for the update.'
+          })
+        }, 1000)
+
+        this.newMessage = '' // Clear the input field
+      }
+    }
+  }
 }
 </script>
 
@@ -29,7 +61,7 @@ export default {
 }
 
 .chat-header {
-  background: linear-gradient(#072e33, #05161a); /* Same as chat body */
+  background: linear-gradient(#072e33, #05161a);
   color: white;
   padding: 10px;
 }
@@ -38,37 +70,64 @@ export default {
   flex: 1;
   padding: 10px;
   overflow-y: auto;
-  background: linear-gradient(#072e33, #05161a); /* Consistent background */
+  background: linear-gradient(#072e33, #05161a);
   color: white;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .message {
   padding: 10px;
-  margin-bottom: 10px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.1); /* Translucent background for messages */
-  color: white;
   max-width: 60%;
+}
+
+.sent {
+  align-self: flex-end;
+  background: rgba(0, 123, 255, 0.6);
+  color: white;
+}
+
+.received {
+  align-self: flex-start;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
 }
 
 .chat-footer {
   padding: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border for separation */
-  background: linear-gradient(#072e33, #05161a); /* Same gradient as header and body */
+  display: flex;
+  gap: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  background: linear-gradient(#072e33, #05161a);
 }
 
 .chat-footer input {
-  width: 100%;
+  flex: 1;
   padding: 10px;
   border-radius: 5px;
-  border: 1px solid rgba(255, 255, 255, 0.3); /* Subtle border */
-  background: rgba(255, 255, 255, 0.1); /* Translucent background matching theme */
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.1);
   color: white;
   outline: none;
   font-size: 14px;
 }
 
 .chat-footer input::placeholder {
-  color: rgba(255, 255, 255, 0.7); /* Placeholder color for readability */
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.chat-footer button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.chat-footer button:hover {
+  background-color: #0056b3;
 }
 </style>

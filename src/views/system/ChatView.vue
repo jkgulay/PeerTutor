@@ -8,7 +8,7 @@ import HomeLayout from '@/components/layout/HomeLayout.vue'
 <template>
   <HomeLayout>
     <template #content>
-      <br /><br /><br />
+      <br /><br />
       <div class="app-container">
         <ContactList :contacts="contacts" @selectContact="selectContact" />
         <ChatWindow :selectedContact="selectedContact" />
@@ -23,8 +23,9 @@ export default {
   data() {
     return {
       contacts: [
-        { id: 1, name: 'Christ Charl', lastMessage: 'I love you', time: '10:25 AM' },
-        { id: 2, name: 'Jamie Taylor', lastMessage: 'Nice one!', time: '10:35 AM' }
+        { id: 1, name: 'Christ Charl', lastMessage: 'Nice one!', time: '10:25 AM' },
+        { id: 2, name: 'Jun Kyle', lastMessage: 'Nice two!', time: '10:35 AM' },
+        { id: 2, name: 'James Ohaha', lastMessage: 'Nice three!', time: '10:35 AM' }
         // Add more contacts
       ],
       selectedContact: null
