@@ -88,6 +88,7 @@ Best regards,
 
   window.location.href = mailtoLink
 }
+
 const openLink = (url) => {
   if (url) {
     window.open(url, '_blank')
@@ -101,19 +102,51 @@ const navigateToTutorProfile = (userId) => {
   })
 }
 
-onMounted(() => {
+onMounted(async () => {
   fetchTutors()
   fetchSubjects()
 })
 
-const openChat = (tutor) => {
-  loading.value[tutor.id] = true
+const openChat = async (tutor) => {
+  try {
+    // Retrieve user ID from local storage
+    const userId = localStorage.getItem('user_id')
 
-  setTimeout(() => {
-    console.log('Chat with:', tutor.firstname)
+    if (!userId) {
+      console.error('User ID not found in local storage.')
+      return
+    }
 
-    loading.value[tutor.id] = false
-  }, 1000)
+    console.log('Sender ID (User):', userId)
+    console.log('Recipient ID (Tutor):', tutor.id)
+
+    // Save sender_id and recipient_id to local storage
+    localStorage.setItem('sender_id', userId)
+    localStorage.setItem('recipient_id', tutor.id)
+
+    // Insert a message into the messages table
+    const { data: messageData, error: messageError } = await supabase
+      .from('messages')
+      .insert({
+        sender_id: userId, // Use user_id from localStorage as sender_id
+        recipient_id: tutor.id, // Tutor's ID as recipient_id
+        content: `Hello ${tutor.firstname}, I would like to connect for a tutoring session.` // Message content
+      })
+      .select()
+      .single()
+
+    if (messageError) {
+      console.error('Error sending message:', messageError)
+      return
+    }
+
+    console.log('Message sent:', messageData)
+
+    // Redirect to messages page
+    router.push('/messages')
+  } catch (error) {
+    console.error('Unexpected error:', error)
+  }
 }
 </script>
 
@@ -269,12 +302,27 @@ const openChat = (tutor) => {
 }
 
 .clickable:hover {
-  color: #80cbc4 !important;
+  color: #e3f2fd;
+}
+
+.text-white {
+  color: white;
+}
+
+.v-avatar {
+  border-radius: 50%;
 }
 
 .tutor-card {
-  min-height: 100%;
   display: flex;
   flex-direction: column;
+}
+
+.expertise-chip {
+  margin-right: 5px;
+}
+
+.selected {
+  background-color: #4caf50 !important;
 }
 </style>
