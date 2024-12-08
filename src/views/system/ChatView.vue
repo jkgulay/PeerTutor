@@ -14,6 +14,7 @@ const senderId = parseInt(localStorage.getItem('sender_id'))
 // Method to fetch messages for the selected contact
 const fetchMessages = async () => {
   const recipientId = localStorage.getItem('recipient_id')
+
   if (selectedContact.value && senderId && recipientId) {
     const { data, error } = await supabase
       .from('messages')
@@ -31,8 +32,14 @@ const fetchMessages = async () => {
 
 // Method to send a new message
 const sendMessage = async () => {
-  const recipientId = selectedContact.value.id
-  if (newMessage.value && senderId && recipientId) {
+  if (!selectedContact.value) {
+    console.error('No contact selected!')
+    alert('Please select a contact before sending a message.')
+    return
+  }
+
+  if (selectedContact.value && selectedContact.value.id && newMessage.value && senderId) {
+    const recipientId = selectedContact.value.id
     // Insert message into the database
     const { error } = await supabase.from('messages').insert([
       {
@@ -45,9 +52,17 @@ const sendMessage = async () => {
     if (error) {
       console.error('Error sending message:', error)
     } else {
+      console.log('Message sent successfully') // Log success
       // Clear the input field
       newMessage.value = ''
     }
+  } else {
+    // Detailed logging for debugging
+    console.error('Send Message Failed: ', {
+      selectedContact: selectedContact.value,
+      newMessage: newMessage.value,
+      senderId: senderId
+    })
   }
 }
 
@@ -62,8 +77,9 @@ const setupRealtimeSubscription = () => {
     .channel('custom-all-channel')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, (payload) => {
       if (
-        payload.new.sender_id === selectedContact.value.id ||
-        payload.new.recipient_id === selectedContact.value.id
+        selectedContact.value &&
+        (payload.new.sender_id === selectedContact.value.id ||
+          payload.new.recipient_id === selectedContact.value.id)
       ) {
         console.log('Change received!', payload)
         fetchMessages() // Fetch messages again when a change occurs for the selected contact
@@ -79,26 +95,34 @@ const setupRealtimeSubscription = () => {
 const fetchContacts = async () => {
   const recipientId = localStorage.getItem('recipient_id')
 
-  // Fetch contacts (users) where sender_id matches recipient_id (the logged-in user's contacts)
-  const { data, error } = await supabase
-    .from('messages')
-    .select('sender_id')
-    .eq('recipient_id', recipientId)
+  if (!recipientId) {
+    console.error('No recipient ID found in localStorage')
+    return
+  }
 
-  if (error) {
-    console.error('Error fetching contacts:', error)
-  } else {
-    // Fetch user data (name, avatar) for each unique sender_id
-    const senderIds = data.map((message) => message.sender_id)
-    const { data: users, error: userError } = await supabase
+  try {
+    // Fetch the tutor's data from Supabase
+    const { data: users, error: usersError } = await supabase
       .from('users')
       .select('id, firstname, avatar')
+      .eq('id', recipientId) // Fetch the selected tutor by ID
 
-    if (userError) {
-      console.error('Error fetching users:', userError)
-    } else {
-      contacts.value = users // Set the contacts (users) array
+    if (usersError) {
+      console.error('Error fetching users:', usersError)
+      return
     }
+
+    if (!users || users.length === 0) {
+      console.warn('No users found for the given recipient ID.')
+      contacts.value = []
+      return
+    }
+
+    console.log('Fetched users:', users) // Add this line to check the fetched data
+
+    contacts.value = users // Update contacts with the tutor details
+  } catch (err) {
+    console.error('An unexpected error occurred:', err)
   }
 }
 
@@ -134,8 +158,9 @@ onMounted(async () => {
 
 // Method to handle when a contact is clicked (selected)
 const selectContact = (contact) => {
+  console.log('Selected contact:', contact) // Log selected contact
   selectedContact.value = contact
-  fetchMessages() // Fetch messages for the selected contact
+  fetchMessages() // Fetch messages for the selected contact (tutor)
 }
 </script>
 
@@ -156,12 +181,12 @@ const selectContact = (contact) => {
               :class="{ selected: selectedContact && selectedContact.id === contact.id }"
             >
               <v-list-item-avatar>
-                <v-img :src="contact.avatar" alt="Contact Avatar" />
+                <v-img :src="contact.avatar || 'default-avatar-url.jpg'" alt="Contact Avatar" />
               </v-list-item-avatar>
               <v-list-item-content>
                 <v-list-item-title>{{ contact.firstname }}</v-list-item-title>
                 <v-list-item-subtitle>
-                  Latest message: {{ messages.length > 0 ? messages[0].content : 'No messages' }}
+                  Latest message: {{ contact.latestMessage }}
                 </v-list-item-subtitle>
               </v-list-item-content>
             </v-list-item>
@@ -175,6 +200,7 @@ const selectContact = (contact) => {
           <v-card-title>
             <h3 v-if="selectedContact">Chat with {{ selectedContact.firstname }}</h3>
           </v-card-title>
+
           <v-card-text>
             <div v-if="messages.length > 0">
               <v-list>
@@ -183,6 +209,16 @@ const selectContact = (contact) => {
                   :key="message.id"
                   :class="{ 'my-message': isMyMessage(senderId, message.sender_id) }"
                 >
+                  <v-list-item-avatar>
+                    <v-img
+                      :src="
+                        isMyMessage(senderId, message.sender_id)
+                          ? 'default-avatar-url.jpg'
+                          : selectedContact.avatar
+                      "
+                      alt="Avatar"
+                    />
+                  </v-list-item-avatar>
                   <v-list-item-content>
                     <v-list-item-title>
                       <strong
