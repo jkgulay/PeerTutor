@@ -13,20 +13,24 @@ const senderId = parseInt(localStorage.getItem('sender_id'))
 
 // Method to fetch messages for the selected contact
 const fetchMessages = async () => {
-  const recipientId = localStorage.getItem('recipient_id')
+  if (!selectedContact.value || !senderId) {
+    console.error('No selected contact or sender ID!')
+    return
+  }
 
-  if (selectedContact.value && senderId && recipientId) {
-    const { data, error } = await supabase
-      .from('messages')
-      .select('*')
-      .eq('sender_id', senderId)
-      .eq('recipient_id', selectedContact.value.id)
+  const recipientId = selectedContact.value.id
+  const { data, error } = await supabase
+    .from('messages')
+    .select('*')
+    .or(`sender_id.eq.${senderId},recipient_id.eq.${senderId}`)
+    .or(`sender_id.eq.${recipientId},recipient_id.eq.${recipientId}`)
+    .order('created_at', { ascending: true }) // Show messages in reverse order
+    .limit(50)
 
-    if (error) {
-      console.error('Error fetching messages:', error)
-    } else {
-      messages.value = data
-    }
+  if (error) {
+    console.error('Error fetching messages:', error)
+  } else {
+    messages.value = data
   }
 }
 
@@ -93,34 +97,66 @@ const setupRealtimeSubscription = () => {
 
 // Method to fetch contacts (users) and the latest message for each contact
 const fetchContacts = async () => {
-  const recipientId = localStorage.getItem('recipient_id')
+  const senderId = parseInt(localStorage.getItem('sender_id')) // Get senderId from localStorage
 
-  if (!recipientId) {
-    console.error('No recipient ID found in localStorage')
+  if (!senderId) {
+    console.error('Sender ID not found in localStorage')
     return
   }
 
   try {
-    // Fetch the tutor's data from Supabase
+    // Fetch messages where the current user is either the sender or recipient
+    const { data: messages, error: messagesError } = await supabase
+      .from('messages')
+      .select('sender_id, recipient_id')
+      .or(`sender_id.eq.${senderId},recipient_id.eq.${senderId}`) // Messages where you are either sender or recipient
+    if (messagesError) {
+      console.error('Error fetching messages:', messagesError)
+      return
+    }
+
+    // Get unique user IDs from messages (excluding the logged-in user)
+    const userIds = messages
+      .map((message) => message.sender_id)
+      .concat(messages.map((message) => message.recipient_id))
+    const uniqueUserIds = [...new Set(userIds)].filter((id) => id !== senderId) // Exclude your own user ID
+
+    if (uniqueUserIds.length === 0) {
+      console.warn('No contacts found who have messaged you.')
+      contacts.value = []
+      return
+    }
+
+    // Fetch user details for those who have messaged you
     const { data: users, error: usersError } = await supabase
       .from('users')
       .select('id, firstname, avatar')
-      .eq('id', recipientId) // Fetch the selected tutor by ID
+      .in('id', uniqueUserIds)
 
     if (usersError) {
       console.error('Error fetching users:', usersError)
       return
     }
 
-    if (!users || users.length === 0) {
-      console.warn('No users found for the given recipient ID.')
-      contacts.value = []
-      return
+    // Now fetch the latest message for each user
+    for (let contact of users) {
+      const { data: latestMessage, error: messageError } = await supabase
+        .from('messages')
+        .select('content, created_at')
+        .eq('sender_id', senderId)
+        .eq('recipient_id', contact.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+
+      if (messageError) {
+        console.error(`Error fetching latest message for contact ${contact.id}:`, messageError)
+        contact.latestMessage = 'No message found'
+      } else {
+        contact.latestMessage = latestMessage.length ? latestMessage[0].content : 'No messages yet'
+      }
     }
 
-    console.log('Fetched users:', users) // Add this line to check the fetched data
-
-    contacts.value = users // Update contacts with the tutor details
+    contacts.value = users
   } catch (err) {
     console.error('An unexpected error occurred:', err)
   }
@@ -181,7 +217,11 @@ const selectContact = (contact) => {
               :class="{ selected: selectedContact && selectedContact.id === contact.id }"
             >
               <v-list-item-avatar>
-                <v-img :src="contact.avatar || 'default-avatar-url.jpg'" alt="Contact Avatar" />
+                <v-img
+                  :src="contact.avatar || 'default-avatar-url.jpg'"
+                  alt="Contact Avatar"
+                  class="avatar-img"
+                />
               </v-list-item-avatar>
               <v-list-item-content>
                 <v-list-item-title>{{ contact.firstname }}</v-list-item-title>
@@ -217,6 +257,7 @@ const selectContact = (contact) => {
                           : selectedContact.avatar
                       "
                       alt="Avatar"
+                      class="avatar-img"
                     />
                   </v-list-item-avatar>
                   <v-list-item-content>
@@ -257,5 +298,12 @@ const selectContact = (contact) => {
 
 .selected {
   background-color: #ddd;
+}
+
+/* Fixed size and rounded avatar */
+.avatar-img {
+  width: 40px; /* Adjust the size of the avatar */
+  height: 40px;
+  border-radius: 50%; /* Makes the avatar round */
 }
 </style>
