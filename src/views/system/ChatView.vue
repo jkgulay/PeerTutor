@@ -1,22 +1,52 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { supabase } from '@/utils/supabase' // Supabase is preconfigured
+import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue'
+import { supabase } from '@/utils/supabase'
+import HomeLayout from '@/components/layout/HomeLayout.vue'
 
-// Reactive state variables
-const contacts = ref([]) // To store the list of users (contacts)
-const messages = ref([]) // To store the messages for the selected contact
-const newMessage = ref('') // To hold the input value for the new message
-const selectedContact = ref(null) // To track the currently selected contact
+const contacts = ref([])
+const filteredContacts = ref([])
+const messages = ref([])
+const newMessage = ref('')
+const selectedContact = ref(null)
+const loadingContacts = ref(true)
+const loadingMessages = ref(false)
+const notification = ref('')
+const unreadMessages = ref(0)
+const chatMessagesRef = ref(null)
+const searchVisible = ref(false)
+const searchQuery = ref('')
 
-// Get the sender's ID from localStorage
+const scrollToBottom = async () => {
+  await nextTick()
+  if (chatMessagesRef.value) {
+    const lastMessage = chatMessagesRef.value.lastElementChild
+    if (lastMessage) {
+      lastMessage.scrollIntoView({
+        behavior: 'smooth',
+        block: 'end'
+      })
+    }
+  }
+}
+
+watch(messages, () => {
+  scrollToBottom()
+})
+
+const initializeScroll = async () => {
+  await nextTick()
+  scrollToBottom()
+}
+
 const senderId = parseInt(localStorage.getItem('sender_id'))
 
-// Method to fetch messages for the selected contact
 const fetchMessages = async () => {
   if (!selectedContact.value || !senderId) {
     console.error('No selected contact or sender ID!')
     return
   }
+
+  loadingMessages.value = true
 
   const recipientId = selectedContact.value.id
   const { data, error } = await supabase
@@ -24,8 +54,10 @@ const fetchMessages = async () => {
     .select('*')
     .or(`sender_id.eq.${senderId},recipient_id.eq.${senderId}`)
     .or(`sender_id.eq.${recipientId},recipient_id.eq.${recipientId}`)
-    .order('created_at', { ascending: true }) // Show messages in reverse order
+    .order('created_at', { descending: false })
     .limit(50)
+
+  loadingMessages.value = false
 
   if (error) {
     console.error('Error fetching messages:', error)
@@ -34,7 +66,6 @@ const fetchMessages = async () => {
   }
 }
 
-// Method to send a new message
 const sendMessage = async () => {
   if (!selectedContact.value) {
     console.error('No contact selected!')
@@ -44,7 +75,6 @@ const sendMessage = async () => {
 
   if (selectedContact.value && selectedContact.value.id && newMessage.value && senderId) {
     const recipientId = selectedContact.value.id
-    // Insert message into the database
     const { error } = await supabase.from('messages').insert([
       {
         sender_id: senderId,
@@ -55,13 +85,17 @@ const sendMessage = async () => {
 
     if (error) {
       console.error('Error sending message:', error)
+      notification.value = 'Error sending message'
     } else {
-      console.log('Message sent successfully') // Log success
-      // Clear the input field
+      console.log('Message sent successfully')
+      notification.value = 'Message sent successfully!'
+      setTimeout(() => {
+        notification.value = ''
+      }, 3000)
       newMessage.value = ''
+      fetchMessages()
     }
   } else {
-    // Detailed logging for debugging
     console.error('Send Message Failed: ', {
       selectedContact: selectedContact.value,
       newMessage: newMessage.value,
@@ -70,64 +104,96 @@ const sendMessage = async () => {
   }
 }
 
-// Computed property to determine if the message is from the current user
 const isMyMessage = (senderId, messageSenderId) => {
   return senderId === messageSenderId
 }
 
-// Set up real-time subscription to listen for changes in the 'messages' table for the selected contact
 const setupRealtimeSubscription = () => {
   const channel = supabase
     .channel('custom-all-channel')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, (payload) => {
+      if (payload.new.recipient_id === senderId) {
+        if (!selectedContact.value || payload.new.sender_id !== selectedContact.value.id) {
+          unreadMessages.value += 1
+          if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('New Message', {
+              body: `You have a new message from ${payload.new.sender_firstname}`,
+              icon: payload.new.sender_avatar
+            })
+          }
+        }
+        fetchContacts()
+      }
       if (
         selectedContact.value &&
         (payload.new.sender_id === selectedContact.value.id ||
           payload.new.recipient_id === selectedContact.value.id)
       ) {
-        console.log('Change received!', payload)
-        fetchMessages() // Fetch messages again when a change occurs for the selected contact
+        fetchMessages()
       }
     })
     .subscribe()
 
-  // Return the channel so we can unsubscribe later
   return channel
 }
 
-// Method to fetch contacts (users) and the latest message for each contact
 const fetchContacts = async () => {
-  const senderId = parseInt(localStorage.getItem('sender_id')) // Get senderId from localStorage
+  loadingContacts.value = true
+
+  const senderId = parseInt(localStorage.getItem('sender_id'))
 
   if (!senderId) {
     console.error('Sender ID not found in localStorage')
+    loadingContacts.value = false
     return
   }
 
   try {
-    // Fetch messages where the current user is either the sender or recipient
     const { data: messages, error: messagesError } = await supabase
       .from('messages')
-      .select('sender_id, recipient_id')
-      .or(`sender_id.eq.${senderId},recipient_id.eq.${senderId}`) // Messages where you are either sender or recipient
+      .select(
+        `
+        id, 
+        sender_id, 
+        recipient_id, 
+        content, 
+        created_at
+      `
+      )
+      .or(`sender_id.eq.${senderId},recipient_id.eq.${senderId}`)
+      .order('created_at', { ascending: false })
+
     if (messagesError) {
       console.error('Error fetching messages:', messagesError)
+      loadingContacts.value = false
       return
     }
 
-    // Get unique user IDs from messages (excluding the logged-in user)
-    const userIds = messages
-      .map((message) => message.sender_id)
-      .concat(messages.map((message) => message.recipient_id))
-    const uniqueUserIds = [...new Set(userIds)].filter((id) => id !== senderId) // Exclude your own user ID
+    const contactLatestMessages = new Map()
+
+    messages.forEach((message) => {
+      const otherUserId = message.sender_id === senderId ? message.recipient_id : message.sender_id
+
+      if (!contactLatestMessages.has(otherUserId)) {
+        contactLatestMessages.set(otherUserId, {
+          content: message.content,
+          created_at: message.created_at
+        })
+      }
+    })
+
+    const uniqueUserIds = [
+      ...new Set(messages.map((m) => (m.sender_id === senderId ? m.recipient_id : m.sender_id)))
+    ].filter((id) => id !== senderId)
 
     if (uniqueUserIds.length === 0) {
       console.warn('No contacts found who have messaged you.')
       contacts.value = []
+      filteredContacts.value = []
+      loadingContacts.value = false
       return
     }
 
-    // Fetch user details for those who have messaged you
     const { data: users, error: usersError } = await supabase
       .from('users')
       .select('id, firstname, avatar')
@@ -135,175 +201,393 @@ const fetchContacts = async () => {
 
     if (usersError) {
       console.error('Error fetching users:', usersError)
+      loadingContacts.value = false
       return
     }
 
-    // Now fetch the latest message for each user
-    for (let contact of users) {
-      const { data: latestMessage, error: messageError } = await supabase
-        .from('messages')
-        .select('content, created_at')
-        .eq('sender_id', senderId)
-        .eq('recipient_id', contact.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
+    const processedContacts = users.map((user) => ({
+      ...user,
+      latestMessage: contactLatestMessages.get(user.id)?.content || 'No messages yet',
+      lastMessageTime: contactLatestMessages.get(user.id)?.created_at
+    }))
 
-      if (messageError) {
-        console.error(`Error fetching latest message for contact ${contact.id}:`, messageError)
-        contact.latestMessage = 'No message found'
-      } else {
-        contact.latestMessage = latestMessage.length ? latestMessage[0].content : 'No messages yet'
-      }
-    }
+    processedContacts.sort((a, b) => {
+      if (!a.lastMessageTime) return 1
+      if (!b.lastMessageTime) return -1
+      return new Date(b.lastMessageTime) - new Date(a.lastMessageTime)
+    })
 
-    contacts.value = users
+    contacts.value = processedContacts
+    filteredContacts.value = processedContacts
   } catch (err) {
     console.error('An unexpected error occurred:', err)
+  } finally {
+    loadingContacts.value = false
   }
 }
 
-// Fetch the list of contacts and set up real-time subscription when the component mounts
-onMounted(async () => {
-  const { data, error } = await supabase.from('users').select('*')
-  if (error) {
-    console.error('Error fetching contacts:', error)
+const filterContacts = () => {
+  if (!searchQuery.value) {
+    filteredContacts.value = contacts.value
   } else {
-    contacts.value = data
+    filteredContacts.value = contacts.value.filter((contact) =>
+      contact.firstname.toLowerCase().includes(searchQuery.value.toLowerCase())
+    )
   }
+}
 
-  // Fetch messages initially for the selected contact
-  fetchMessages()
-
-  // Fetch contacts (inbox) based on the logged-in user's recipient_id
-  fetchContacts()
-
-  // Set up real-time subscription for messages
-  const channel = setupRealtimeSubscription()
-
-  // Soft reload every 1 second (optional)
-  const reloadInterval = setInterval(fetchMessages, 1000)
-
-  // Clean up the real-time subscription and interval when the component unmounts
-  onUnmounted(() => {
-    if (channel) {
-      supabase.removeChannel(channel) // Unsubscribe from the channel
-    }
-    clearInterval(reloadInterval) // Clear the reload interval
-  })
+watch(searchQuery, (newValue) => {
+  if (!newValue) {
+    filteredContacts.value = contacts.value
+  }
 })
 
-// Method to handle when a contact is clicked (selected)
+const toggleSearch = () => {
+  searchVisible.value = !searchVisible.value
+}
+
+onMounted(async () => {
+  await fetchContacts()
+  fetchMessages()
+  const channel = setupRealtimeSubscription()
+
+  onUnmounted(() => {
+    if (channel) {
+      supabase.removeChannel(channel)
+    }
+  })
+  if ('Notification' in window) {
+    Notification.requestPermission()
+  }
+})
+
 const selectContact = (contact) => {
-  console.log('Selected contact:', contact) // Log selected contact
   selectedContact.value = contact
-  fetchMessages() // Fetch messages for the selected contact (tutor)
+  fetchMessages()
+  initializeScroll()
 }
 </script>
 
 <template>
-  <v-container fluid>
-    <v-row>
-      <!-- Contact list column -->
-      <v-col cols="12" sm="4">
-        <v-card>
-          <v-card-title>
-            <h3>Inbox</h3>
-          </v-card-title>
-          <v-list>
-            <v-list-item
-              v-for="contact in contacts"
-              :key="contact.id"
-              @click="selectContact(contact)"
-              :class="{ selected: selectedContact && selectedContact.id === contact.id }"
-            >
-              <v-list-item-avatar>
-                <v-img
-                  :src="contact.avatar || 'default-avatar-url.jpg'"
-                  alt="Contact Avatar"
-                  class="avatar-img"
-                />
-              </v-list-item-avatar>
-              <v-list-item-content>
-                <v-list-item-title>{{ contact.firstname }}</v-list-item-title>
-                <v-list-item-subtitle>
-                  Latest message: {{ contact.latestMessage }}
-                </v-list-item-subtitle>
-              </v-list-item-content>
-            </v-list-item>
-          </v-list>
-        </v-card>
-      </v-col>
+  <HomeLayout>
+    <template #content>
+      <v-container fluid class="chat-container">
+        <v-row class="full-height py-10">
+          <!-- Contacts Column -->
+          <v-col cols="12" sm="4" class="contacts-column">
+            <v-card class="contacts-card elevation-2 rounded-lg">
+              <v-card-title class="d-flex align-center pa-4">
+                <h2 class="text-h5 font-weight-bold">Chats</h2>
+                <v-spacer />
+                <v-btn icon @click="toggleSearch">
+                  <v-icon>mdi-magnify</v-icon>
+                </v-btn>
+              </v-card-title>
 
-      <!-- Chat window column -->
-      <v-col cols="12" sm="8">
-        <v-card>
-          <v-card-title>
-            <h3 v-if="selectedContact">Chat with {{ selectedContact.firstname }}</h3>
-          </v-card-title>
+              <v-divider></v-divider>
 
-          <v-card-text>
-            <div v-if="messages.length > 0">
-              <v-list>
-                <v-list-item
-                  v-for="message in messages"
-                  :key="message.id"
-                  :class="{ 'my-message': isMyMessage(senderId, message.sender_id) }"
-                >
-                  <v-list-item-avatar>
-                    <v-img
-                      :src="
-                        isMyMessage(senderId, message.sender_id)
-                          ? 'default-avatar-url.jpg'
-                          : selectedContact.avatar
-                      "
-                      alt="Avatar"
-                      class="avatar-img"
-                    />
-                  </v-list-item-avatar>
-                  <v-list-item-content>
-                    <v-list-item-title>
-                      <strong
-                        >{{
-                          isMyMessage(senderId, message.sender_id)
-                            ? 'You'
-                            : selectedContact.firstname
-                        }}:</strong
-                      >
+              <!-- Search Input -->
+              <v-expand-transition>
+                <div v-if="searchVisible" class="px-4 pb-2">
+                  <v-text-field
+                    v-model="searchQuery"
+                    variant="outlined"
+                    density="compact"
+                    placeholder="Search contacts"
+                    prepend-inner-icon="mdi-magnify"
+                    hide-details
+                    clearable
+                    @input="filterContacts"
+                  ></v-text-field>
+                </div>
+              </v-expand-transition>
+
+              <v-list class="py-0">
+                <template v-if="loadingContacts">
+                  <v-list-item v-for="n in 5" :key="n">
+                    <v-list-item-avatar>
+                      <v-skeleton-loader type="avatar"></v-skeleton-loader>
+                    </v-list-item-avatar>
+                    <v-list-item-content>
+                      <v-skeleton-loader type="text"></v-skeleton-loader>
+                    </v-list-item-content>
+                  </v-list-item>
+                </template>
+                <template v-else-if="filteredContacts.length">
+                  <v-list-item
+                    v-for="contact in filteredContacts"
+                    :key="contact.id"
+                    @click="selectContact(contact)"
+                    :class="{
+                      'active-contact': selectedContact && selectedContact.id === contact.id
+                    }"
+                    class="contact-item"
+                  >
+                    <template #prepend>
+                      <v-avatar size="48" class="mr-3">
+                        <v-img
+                          :src="contact.avatar || '/default-avatar.png'"
+                          :alt="contact.firstname"
+                          cover
+                        />
+                      </v-avatar>
+                    </template>
+
+                    <v-list-item-title class="font-weight-medium">
+                      {{ contact.firstname }}
                     </v-list-item-title>
-                    <v-list-item-subtitle>{{ message.content }}</v-list-item-subtitle>
-                    <v-list-item-subtitle class="text-right">
-                      {{ new Date(message.created_at).toLocaleTimeString() }}
+                    <v-list-item-subtitle class="text-truncate">
+                      {{ contact.latestMessage || 'No recent messages' }}
                     </v-list-item-subtitle>
-                  </v-list-item-content>
-                </v-list-item>
+
+                    <template #append>
+                      <v-chip v-if="contact.unreadCount" size="small" color="primary">
+                        {{ contact.unreadCount }}
+                      </v-chip>
+                    </template>
+                  </v-list-item>
+                </template>
+                <v-alert v-else type="info" class="ma-3"> No conversations yet </v-alert>
               </v-list>
-            </div>
-            <v-alert v-else>No messages to display.</v-alert>
-          </v-card-text>
-          <v-card-actions>
-            <v-text-field v-model="newMessage" label="Type a message" />
-            <v-btn @click="sendMessage">Send</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-col>
-    </v-row>
-  </v-container>
+            </v-card>
+          </v-col>
+
+          <!-- Chat Window Column -->
+          <v-col cols="12" sm="8" class="chat-window-column">
+            <v-card v-if="selectedContact" class="chat-card elevation-1 d-flex flex-column">
+              <!-- Chat Header -->
+              <v-card-title class="chat-header py-3">
+                <v-avatar size="40" class="mr-3">
+                  <v-img
+                    :src="selectedContact.avatar || '/default-avatar.png'"
+                    :alt="selectedContact.firstname"
+                  />
+                </v-avatar>
+                <div>
+                  <div class="font-weight-bold">{{ selectedContact.firstname }}</div>
+                  <div class="text-caption text-disabled">Active now</div>
+                </div>
+                <v-spacer />
+              </v-card-title>
+
+              <!-- Chat Messages -->
+              <v-card-text
+                ref="chatMessagesRef"
+                class="chat-messages flex-grow-1 overflow-y-auto pa-4"
+                style="max-height: calc(100vh - 250px); overflow-y: auto"
+              >
+                <div class="messages-container">
+                  <template v-if="loadingMessages">
+                    <v-skeleton-loader
+                      v-for="n in 5"
+                      :key="n"
+                      type="list-item-avatar-two-line"
+                      class="mb-2"
+                    />
+                  </template>
+                  <template v-else-if="messages.length">
+                    <div
+                      v-for="message in messages"
+                      :key="message.id"
+                      class="message-wrapper"
+                      :class="{
+                        'message-sent': isMyMessage(senderId, message.sender_id),
+                        'message-received': !isMyMessage(senderId, message.sender_id)
+                      }"
+                    >
+                      <v-avatar
+                        v-if="!isMyMessage(senderId, message.sender_id)"
+                        size="32"
+                        class="mr-2"
+                      >
+                        <v-img
+                          :src="selectedContact.avatar || '/default-avatar.png'"
+                          :alt="selectedContact.firstname"
+                        />
+                      </v-avatar>
+                      <div class="message-bubble">
+                        <div class="message-content">
+                          {{ message.content }}
+                        </div>
+                        <div class="message-time">
+                          {{
+                            new Date(message.created_at).toLocaleTimeString([], {
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })
+                          }}
+                        </div>
+                      </div>
+                    </div>
+                  </template>
+                  <v-alert v-else type="info" class="text-center">
+                    No messages in this conversation
+                  </v-alert>
+                </div>
+              </v-card-text>
+              <!-- Message Input -->
+              <v-card-actions class="message-input-area py-2 px-4">
+                <v-text-field
+                  v-model="newMessage"
+                  placeholder="Type a message"
+                  single-line
+                  hide-details
+                  class="flex-grow-1"
+                  @keyup.enter="sendMessage"
+                >
+                  <template #append>
+                    <v-btn icon :disabled="!newMessage" @click="sendMessage">
+                      <v-icon>mdi-send</v-icon>
+                    </v-btn>
+                  </template>
+                </v-text-field>
+              </v-card-actions>
+            </v-card>
+
+            <v-sheet v-else class="d-flex flex-column align-center justify-center full-height">
+              <v-icon size="100" color="grey lighten-2">mdi-message-outline</v-icon>
+              <h3 class="text-h6 mt-4 grey--text text--darken-1">
+                Select a chat to start messaging
+              </h3>
+            </v-sheet>
+          </v-col>
+        </v-row>
+
+        <v-snackbar v-model="notification" color="success" timeout="3000">
+          {{ notification }}
+          <template #action>
+            <v-btn color="white" @click="notification = ''">Close</v-btn>
+          </template>
+        </v-snackbar>
+      </v-container>
+    </template>
+  </HomeLayout>
 </template>
 
 <style scoped>
-.my-message {
+.chat-container {
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
+}
+
+.full-height {
+  height: 100%;
+}
+
+.contacts-column {
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.contacts-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-window-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-card {
+  display: flex;
+  flex-direction: column;
+  height: 610px;
+}
+
+.chat-header {
+  background-color: #f5f5f5;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.chat-messages {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+.chat-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+}
+
+.messages-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 20px;
+}
+
+.message-wrapper {
+  display: flex;
+  width: 100%;
+  align-items: flex-end;
+}
+
+.message-bubble {
+  max-width: 70%;
+  padding: 10px;
+  border-radius: 15px;
+  position: relative;
+}
+
+.message-sent {
+  justify-content: flex-end;
+}
+
+.message-sent .message-bubble {
   background-color: #d1f7d6;
-  align-self: flex-end;
+  margin-left: auto;
 }
 
-.selected {
-  background-color: #ddd;
+.message-received {
+  justify-content: flex-start;
 }
 
-/* Fixed size and rounded avatar */
-.avatar-img {
-  width: 40px; /* Adjust the size of the avatar */
-  height: 40px;
-  border-radius: 50%; /* Makes the avatar round */
+.message-received .message-bubble {
+  background-color: #f1f1f1;
+  margin-right: auto;
+}
+
+.message-content {
+  word-wrap: break-word;
+}
+
+.message-time {
+  font-size: 0.75rem;
+  color: #888;
+  margin-top: 5px;
+  text-align: right;
+}
+
+.active-contact {
+  background-color: #e0f7fa;
+}
+
+.v-list-item {
+  transition: background-color 0.3s;
+}
+
+.v-list-item:hover {
+  background-color: #f0f0f0;
+}
+
+.v-btn {
+  transition: background-color 0.3s;
+}
+
+.v-btn:hover {
+  background-color: #1976d2;
 }
 </style>
