@@ -3,6 +3,8 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { supabase } from '@/utils/supabase'
 
+const dialog = ref(false)
+const router = useRouter()
 const searchQuery = ref('')
 const drawer = ref(false)
 const toggleDrawer = () => {
@@ -48,16 +50,31 @@ const startChat = (contact) => {
 
 const fetchContacts = async () => {
   loadingContacts.value = true
-
-  const senderId = parseInt(localStorage.getItem('sender_id'))
-
-  if (!senderId) {
-    console.error('Sender ID not found in localStorage')
-    loadingContacts.value = false
-    return
-  }
-
   try {
+    // Fetch the authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    
+    if (authError || !user) {
+      console.error('Authentication error:', authError)
+      router.replace({ name: 'login' })
+      return
+    }
+
+    // Fetch the user's ID from the users table
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('user_id', user.id)
+      .single()
+
+    if (userError || !userData) {
+      console.error('Error fetching user data:', userError)
+      router.replace({ name: 'login' })
+      return
+    }
+
+    const senderId = userData.id
+
     // Fetch all messages involving the sender with latest message details
     const { data: messages, error: messagesError } = await supabase
       .from('messages')
@@ -138,16 +155,48 @@ const fetchContacts = async () => {
     filteredContacts.value = processedContacts
   } catch (err) {
     console.error('An unexpected error occurred:', err)
+    // Redirect to login on error
+    router.replace({ name: 'login' })
   } finally {
     loadingContacts.value = false
   }
 }
 
+const openChat = async () => {
+  try {
+    // Fetch the authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    
+    if (authError || !user) {
+      console.error('Authentication error:', authError)
+      router.replace({ name: 'login' })
+      return
+    }
 
+    // Fetch the user's ID from the users table
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('user_id', user.id)
+      .single()
 
-const dialog = ref(false)
-const router = useRouter()
+    if (userError || !userData) {
+      console.error('Error fetching user data:', userError)
+      router.replace({ name: 'login' })
+      return
+    }
 
+    // Store the sender ID in localStorage
+    localStorage.setItem('sender_id', userData.id.toString())
+    localStorage.setItem('user_id', userData.id.toString())
+
+    // Navigate to messages
+    router.push('/messages')
+  } catch (error) {
+    console.error('Unexpected error during chat navigation:', error)
+    router.replace({ name: 'login' })
+  }
+}
 const onLogout = async () => {
   try {
     const { error } = await supabase.auth.signOut()
@@ -241,109 +290,109 @@ onMounted(() => {
         <v-app-bar-nav-icon @click="toggleDrawer"></v-app-bar-nav-icon>
 
         <v-col class="d-flex align-center">
-      <v-img src="/logo/try2.png" max-width="50"></v-img>
-      <v-app-bar-title class="pl-2">
-        <RouterLink to="/home" style="text-decoration: none">
-          <span class="font-weight-bold" style="color: #80cbc4">PeerTutor</span>
-        </RouterLink>
-      </v-app-bar-title>
-    </v-col>
+          <v-img src="/logo/try2.png" max-width="50"></v-img>
+          <v-app-bar-title class="pl-2">
+            <RouterLink to="/home" style="text-decoration: none">
+              <span class="font-weight-bold" style="color: #80cbc4">PeerTutor</span>
+            </RouterLink>
+          </v-app-bar-title>
+        </v-col>
 
-    <v-col cols="5" class="d-flex justify-center">
-      <v-text-field
-        v-model="searchQuery"
-        append-inner-icon="mdi-magnify"
-        density="compact"
-        label="Search"
-        variant="solo"
-        hide-details
-        single-line
-        class="mx-4"
-        style="max-width: 400px; width: 100%"
-        @input="$emit('search-query', searchQuery)"
-      ></v-text-field>
-    </v-col>
+        <v-col cols="5" class="d-flex justify-center">
+          <v-text-field
+            v-model="searchQuery"
+            append-inner-icon="mdi-magnify"
+            density="compact"
+            label="Search"
+            variant="solo"
+            hide-details
+            single-line
+            class="mx-4"
+            style="max-width: 400px; width: 100%"
+            @input="$emit('search-query', searchQuery)"
+          ></v-text-field>
+        </v-col>
 
-    <v-spacer></v-spacer>
+        <v-spacer></v-spacer>
 
-    <v-btn icon @click="openChatDialog">
-      <v-icon>mdi-chat</v-icon>
-    </v-btn>
-    <v-dialog v-model="dialog" max-width="450" scrollable>
-      <v-card class="elevation-2 rounded-lg" >
-        <v-card-title class="d-flex align-center pa-4">
-          <h2 class="text-h5 font-weight-bold">Chats</h2>
-          <v-spacer />
-          <v-btn icon @click="toggleSearch">
-            <v-icon>mdi-magnify</v-icon>
-          </v-btn>
-        </v-card-title>
+        <v-btn icon @click="openChatDialog">
+          <v-icon>mdi-chat</v-icon>
+        </v-btn>
+        <v-dialog v-model="dialog" max-width="450" scrollable>
+          <v-card class="elevation-2 rounded-lg">
+            <v-card-title class="d-flex align-center pa-4">
+              <h2 class="text-h5 font-weight-bold">Chats</h2>
+              <v-spacer />
+              <v-btn icon @click="toggleSearch">
+                <v-icon>mdi-magnify</v-icon>
+              </v-btn>
+            </v-card-title>
 
-        <v-divider></v-divider>
+            <v-divider></v-divider>
 
-        <!-- Search Input -->
-        <v-expand-transition>
-          <div v-if="searchVisible" class="px-4 pb-2">
-            <v-text-field
-              v-model="searchQuery"
-              variant="outlined"
-              density="compact"
-              placeholder="Search contacts"
-              prepend-inner-icon="mdi-magnify"
-              hide-details
-              clearable
-              @input="filterContacts"
-            ></v-text-field>
-          </div>
-        </v-expand-transition>
+            <!-- Search Input -->
+            <v-expand-transition>
+              <div v-if="searchVisible" class="px-4 pb-2">
+                <v-text-field
+                  v-model="searchQuery"
+                  variant="outlined"
+                  density="compact"
+                  placeholder="Search contacts"
+                  prepend-inner-icon="mdi-magnify"
+                  hide-details
+                  clearable
+                  @input="filterContacts"
+                ></v-text-field>
+              </div>
+            </v-expand-transition>
 
-        <v-list class="py-0">
-          <template v-if="loadingContacts">
-            <v-list-item v-for="n in 5" :key="n">
-              <v-list-item-avatar>
-                <v-skeleton-loader type="avatar"></v-skeleton-loader>
-              </v-list-item-avatar>
-              <v-list-item-content>
-                <v-skeleton-loader type="text"></v-skeleton-loader>
-              </v-list-item-content>
-            </v-list-item>
-          </template>
-          <template v-else-if="filteredContacts.length">
-            <v-list-item
-              v-for="contact in filteredContacts"
-              :key="contact.id"
-              @click="startChat(contact)"
-              class="contact-item"
-            >
-              <template #prepend>
-                <v-avatar size="48" class="mr-3">
-                  <v-img
-                    :src="contact.avatar || '/default-avatar.png'"
-                    :alt="contact.firstname"
-                    cover
-                  />
-                </v-avatar>
+            <v-list class="py-0">
+              <template v-if="loadingContacts">
+                <v-list-item v-for="n in 5" :key="n">
+                  <v-list-item-avatar>
+                    <v-skeleton-loader type="avatar"></v-skeleton-loader>
+                  </v-list-item-avatar>
+                  <v-list-item-content>
+                    <v-skeleton-loader type="text"></v-skeleton-loader>
+                  </v-list-item-content>
+                </v-list-item>
               </template>
+              <template v-else-if="filteredContacts.length">
+                <v-list-item
+                  v-for="contact in filteredContacts"
+                  :key="contact.id"
+                  @click="startChat(contact)"
+                  class="contact-item"
+                >
+                  <template #prepend>
+                    <v-avatar size="48" class="mr-3">
+                      <v-img
+                        :src="contact.avatar || '/default-avatar.png'"
+                        :alt="contact.firstname"
+                        cover
+                      />
+                    </v-avatar>
+                  </template>
 
-              <v-list-item-title class="font-weight-medium">
-                {{ contact.firstname }}
-              </v-list-item-title>
-              <v-list-item-subtitle class="text-truncate">
-                {{ contact.latestMessage || 'No recent messages' }}
-              </v-list-item-subtitle>
+                  <v-list-item-title class="font-weight-medium">
+                    {{ contact.firstname }}
+                  </v-list-item-title>
+                  <v-list-item-subtitle class="text-truncate">
+                    {{ contact.latestMessage || 'No recent messages' }}
+                  </v-list-item-subtitle>
 
-              <template #append>
-                <v-chip v-if="contact.unreadCount" size="small" color="primary">
-                  {{ contact.unreadCount }}
-                </v-chip>
+                  <template #append>
+                    <v-chip v-if="contact.unreadCount" size="small" color="primary">
+                      {{ contact.unreadCount }}
+                    </v-chip>
+                  </template>
+                </v-list-item>
               </template>
-            </v-list-item>
-          </template>
-          <v-alert v-else type="info" class="ma-3"> No conversations yet </v-alert>
-        </v-list>
-      </v-card>
-    </v-dialog>
-  </v-app-bar>
+              <v-alert v-else type="info" class="ma-3"> No conversations yet </v-alert>
+            </v-list>
+          </v-card>
+        </v-dialog>
+      </v-app-bar>
 
       <!-- Main Content Layout -->
       <v-layout row>
@@ -386,10 +435,8 @@ onMounted(() => {
             <v-list-item prepend-icon="mdi-account-box" class="clickable">
               <RouterLink class="text-white text-decoration-none" to="/profile">Profile</RouterLink>
             </v-list-item>
-            <v-list-item prepend-icon="mdi-message" class="clickable">
-              <RouterLink class="text-white text-decoration-none" to="/messages"
-                >Messages</RouterLink
-              >
+            <v-list-item prepend-icon="mdi-message" class="clickable" @click="openChat()">
+              Messages
             </v-list-item>
             <!-- Logout Button -->
             <v-list-item prepend-icon="mdi-logout" @click="onLogout" class="clickable">
@@ -431,6 +478,4 @@ onMounted(() => {
 .clickable:hover {
   color: #80cbc4 !important;
 }
-
-
 </style>

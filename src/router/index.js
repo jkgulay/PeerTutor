@@ -86,4 +86,38 @@ router.beforeEach(async (to, from, next) => {
   }
 })
 
+router.beforeEach(async (to, from, next) => {
+  const protectedRoutes = ['/home', '/messages', '/profile']
+  
+  if (protectedRoutes.includes(to.path)) {
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) {
+      next('/login')
+      return
+    }
+
+    if (!localStorage.getItem('sender_id') && !localStorage.getItem('user_id')) {
+      try {
+        const { data: userData } = await supabase
+          .from('users')
+          .select('id')
+          .eq('user_id', user.id)
+          .single()
+
+        if (userData) {
+          localStorage.setItem('sender_id', userData.id.toString())
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error)
+        next('/login')
+        return
+      }
+    }
+  }
+  
+  next()
+})
+
+
 export default router

@@ -207,7 +207,7 @@ const fetchContacts = async () => {
 
     const { data: users, error: usersError } = await supabase
       .from('users')
-      .select('id, firstname, avatar')
+      .select('id, firstname, avatar, lastname')
       .in('id', uniqueUserIds)
 
     if (usersError) {
@@ -345,7 +345,7 @@ const selectContact = (contact) => {
                     </template>
 
                     <v-list-item-title class="font-weight-medium">
-                      {{ contact.firstname }}
+                      {{ contact.firstname }} {{ contact.lastname }}
                     </v-list-item-title>
                     <v-list-item-subtitle class="text-truncate">
                       {{ contact.latestMessage || 'No recent messages' }}
@@ -367,16 +367,18 @@ const selectContact = (contact) => {
           <v-col cols="12" sm="8" class="chat-window-column">
             <v-card v-if="selectedContact" class="chat-card elevation-1 d-flex flex-column">
               <!-- Chat Header -->
-              <v-card-title class="chat-header py-3">
+              <v-card-title class="chat-header py-3 d-flex align-center">
                 <v-avatar size="40" class="mr-3">
                   <v-img
                     :src="selectedContact.avatar || '/default-avatar.png'"
                     :alt="selectedContact.firstname"
+                    cover
                   />
                 </v-avatar>
-                <div>
-                  <div class="font-weight-bold">{{ selectedContact.firstname }}</div>
-                  <div class="text-caption text-disabled">Active now</div>
+                <div class="d-flex flex-column">
+                  <div class="font-weight-bold text-h6">
+                    {{ selectedContact.firstname }} {{ selectedContact.lastname }}
+                  </div>
                 </div>
                 <v-spacer />
               </v-card-title>

@@ -109,7 +109,6 @@ onMounted(async () => {
 
 const openChat = async (tutor) => {
   try {
-    // Retrieve user ID from local storage
     const userId = localStorage.getItem('user_id')
 
     if (!userId) {
@@ -120,11 +119,9 @@ const openChat = async (tutor) => {
     console.log('Sender ID (User):', userId)
     console.log('Recipient ID (Tutor):', tutor.id)
 
-    // Save sender_id and recipient_id to local storage
     localStorage.setItem('sender_id', userId)
     localStorage.setItem('recipient_id', tutor.id)
 
-    // Insert a message into the messages table
     const { data: messageData, error: messageError } = await supabase
       .from('messages')
       .insert({
@@ -142,7 +139,6 @@ const openChat = async (tutor) => {
 
     console.log('Message sent:', messageData)
 
-    // Redirect to messages page
     router.push('/messages')
   } catch (error) {
     console.error('Unexpected error:', error)
