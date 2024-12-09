@@ -28,8 +28,6 @@ const showNotification = (message, type = 'info') => {
     type,
     show: true
   }
-
-  // Auto-hide notification after 3 seconds
   setTimeout(() => {
     notification.value.show = false
   }, 3000)
@@ -83,6 +81,7 @@ const fetchMessages = async () => {
     messages.value = data
   }
 }
+
 
 const sendMessage = async () => {
   if (!selectedContact.value) {
@@ -283,10 +282,10 @@ const selectContact = (contact) => {
   <HomeLayout>
     <template #content>
       <v-container fluid class="chat-container">
-        <v-row class="full-height py-10">
+        <v-row class="full-height py-10" >
           <!-- Contacts Column -->
           <v-col cols="12" sm="4" class="contacts-column">
-            <v-card class="contacts-card elevation-2 rounded-lg">
+            <v-card class="contacts-card elevation-2 rounded-lg" >
               <v-card-title class="d-flex align-center pa-4">
                 <h2 class="text-h5 font-weight-bold">Chats</h2>
                 <v-spacer />
@@ -364,7 +363,7 @@ const selectContact = (contact) => {
           </v-col>
 
           <!-- Chat Window Column -->
-          <v-col cols="12" sm="8" class="chat-window-column">
+          <v-col cols="12" sm="8" class="chat-window-column" color="#004D40">
             <v-card v-if="selectedContact" class="chat-card elevation-1 d-flex flex-column">
               <!-- Chat Header -->
               <v-card-title class="chat-header py-3 d-flex align-center">
@@ -495,6 +494,7 @@ const selectContact = (contact) => {
   height: 100vh;
   max-height: 100vh;
   overflow: hidden;
+
 }
 
 .full-height {

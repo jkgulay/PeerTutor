@@ -546,8 +546,8 @@ onMounted(() => {
 <template>
   <HomeLayout>
     <template #content>
-      <v-container class="profile-container d-flex justify-center pa-0">
-        <v-card max-width="900" class="profile-card">
+      <v-container class="profile-container d-flex justify-center pa-0" >
+        <v-card max-width="900" class="profile-card" color="#00695C">
           <v-img :src="userProfile.background" class="background-img" height="250px" cover></v-img>
 
           <v-container class="profile-header">
@@ -888,9 +888,10 @@ onMounted(() => {
 <style scoped>
 .profile-container {
   min-height: 100vh;
-  background-color: #f9f9f9;
+  background-color: #004D40;
   padding-bottom: 80px;
 }
+
 
 .profile-card {
   min-height: 400px;
@@ -898,10 +899,13 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  border-radius: 12px; 
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); 
 }
+
 .background-img {
   object-fit: cover;
-  border-bottom: 5px solid #3f51b5;
+  border-bottom: 5px solid #004D40;
 }
 
 .profile-header {
@@ -923,19 +927,19 @@ onMounted(() => {
 
 .profile-name {
   font-weight: bold;
-  font-size: 24px;
+  font-size: 26px; 
   margin-bottom: 5px;
 }
 
 .profile-job {
-  font-size: 18px;
-  color: #757575;
+  font-size: 20px;
+  color: #CFD8DC;
 }
 
 .profile-bio {
   padding: 10px;
   text-align: center;
-  color: #9e9e9e;
+  color: #B0BEC5;
   font-style: italic;
   max-width: 85%;
 }
@@ -957,5 +961,24 @@ onMounted(() => {
 .v-btn {
   text-transform: none;
   font-weight: 500;
+  transition: background-color 0.3s, transform 0.2s; 
 }
+.v-btn:hover {
+  background-color: #4db6ac; 
+  transform: scale(1.05);
+}
+
+.v-btn:active {
+  transform: scale(0.95);
+}
+
+.review-card {
+  border-radius: 8px; 
+}
+
+.review-card .v-list-item:hover {
+  background-color: #f1f1f1; 
+}
+
+
 </style>

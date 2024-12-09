@@ -52,8 +52,11 @@ const fetchContacts = async () => {
   loadingContacts.value = true
   try {
     // Fetch the authenticated user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    
+    const {
+      data: { user },
+      error: authError
+    } = await supabase.auth.getUser()
+
     if (authError || !user) {
       console.error('Authentication error:', authError)
       router.replace({ name: 'login' })
@@ -165,8 +168,11 @@ const fetchContacts = async () => {
 const openChat = async () => {
   try {
     // Fetch the authenticated user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    
+    const {
+      data: { user },
+      error: authError
+    } = await supabase.auth.getUser()
+
     if (authError || !user) {
       console.error('Authentication error:', authError)
       router.replace({ name: 'login' })
@@ -446,7 +452,7 @@ onMounted(() => {
         </v-navigation-drawer>
 
         <!-- Content and Card Section -->
-        <v-main>
+        <v-main style="background-color: #05161a">
           <v-container>
             <slot name="content"></slot>
           </v-container>

@@ -159,7 +159,7 @@ const openChat = async (tutor) => {
             class="d-flex"
           >
             <v-card
-              color="#05161a"
+              color="#004D40"
               class="tutor-card d-flex flex-column"
               style="border-radius: 20px; padding: 16px; width: 100%"
             >

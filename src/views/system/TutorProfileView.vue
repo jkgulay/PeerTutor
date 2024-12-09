@@ -209,16 +209,11 @@ const fetchTutorProfile = async () => {
   try {
     const routeUserId = route.params.userId
 
-    console.log('Route User ID:', routeUserId)
-
     const { data: userIdData, error: userIdError } = await supabase
       .from('users')
       .select('id')
       .eq('user_id', routeUserId)
       .single()
-
-    console.log('User ID Data:', userIdData)
-    console.log('User ID Error:', userIdError)
 
     if (userIdError) {
       console.error('Error finding user:', userIdError)
@@ -241,9 +236,6 @@ const fetchTutorProfile = async () => {
       .eq('role', 'Tutor')
       .single()
 
-    console.log('Tutor Profile Fetch Data:', data)
-    console.log('Tutor Profile Fetch Error:', error)
-
     if (error) {
       console.error('Error fetching tutor profile:', error)
       router.replace('/home')
@@ -252,7 +244,7 @@ const fetchTutorProfile = async () => {
 
     if (data) {
       tutorProfile.value = {
-        user_id: data.user_id, // Use the external user_id
+        user_id: data.user_id,
         id: data.id,
         firstname: data.firstname || '',
         lastname: data.lastname || '',
@@ -267,6 +259,9 @@ const fetchTutorProfile = async () => {
         availability: data.availability || false,
         background: data.background || ''
       }
+
+      // Fetch reviews for the tutor
+      await fetchReviews(tutorProfile.value.id)
       await calculateAverageRating()
 
       console.log('Updated Tutor Profile:', tutorProfile.value)
@@ -274,6 +269,67 @@ const fetchTutorProfile = async () => {
   } catch (err) {
     console.error('Unexpected error:', err)
     router.replace('/home')
+  }
+}
+
+const fetchReviews = async (userId) => {
+  if (!userId) {
+    return
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('reviews')
+      .select(
+        `
+        review_text, 
+        rating, 
+        created_at,
+        users!reviews_reviewer_id_fkey (
+          avatar,
+          firstname,
+          lastname
+        )
+      `
+      )
+      .eq('tutor_id', userId)
+
+    if (error) {
+      console.error('Error fetching reviews:', error)
+      return
+    }
+
+    reviews.value = data || []
+    console.log('Fetched reviews:', reviews.value)
+  } catch (err) {
+    console.error('Unexpected error fetching reviews:', err)
+  }
+}
+const reviews = ref([])
+
+const formatDate = (dateString, options = {}) => {
+  if (!dateString) return 'Unknown date'
+
+  const defaultOptions = {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  }
+
+  const mergedOptions = { ...defaultOptions, ...options }
+
+  try {
+    const date = new Date(dateString)
+
+    // Check if the date is valid
+    if (isNaN(date.getTime())) {
+      return 'Invalid date'
+    }
+
+    return new Intl.DateTimeFormat('en-US', mergedOptions).format(date)
+  } catch (error) {
+    console.error('Error formatting date:', error)
+    return 'Unknown date'
   }
 }
 
@@ -287,6 +343,7 @@ onMounted(() => {
   fetchTutorProfile()
   fetchCurrentUser()
   calculateAverageRating()
+  fetchReviews(tutorProfile.value.id)
 })
 </script>
 
@@ -294,7 +351,7 @@ onMounted(() => {
   <HomeLayout>
     <template #content>
       <v-container class="profile-container d-flex justify-center pa-0">
-        <v-card max-width="900" class="profile-card">
+        <v-card max-width="900" class="profile-card" color="#00695C">
           <v-img
             :src="tutorProfile.background || 'default-background-url'"
             class="background-img"
@@ -333,7 +390,7 @@ onMounted(() => {
               <v-col cols="12" md="4" class="mb-2">
                 <v-btn
                   block
-                  color="teal-darken-2"
+                  color="teal-lighten-1"
                   rounded
                   large
                   elevation="2"
@@ -416,6 +473,82 @@ onMounted(() => {
             </v-row>
 
             <v-divider class="my-4"></v-divider>
+            <v-row class="profile-actions">
+              <v-col cols="12">
+                <v-card class="review-card" elevation="1">
+                  <v-card-title class="d-flex justify-space-between align-center pa-4">
+                    <div class="d-flex align-center">
+                      <span class="text-h6 font-weight-bold">User Reviews</span>
+                    </div>
+                    <v-chip color="teal-lighten-1" variant="outlined" small>
+                      {{ reviews.length }} Reviews
+                    </v-chip>
+                  </v-card-title>
+
+                  <v-divider></v-divider>
+
+                  <template v-if="reviews.length > 0">
+                    <v-list lines="two" class="py-0">
+                      <template v-for="(review, index) in reviews" :key="index">
+                        <v-list-item class="px-4 py-3">
+                          <template v-slot:prepend>
+                            <v-avatar size="40" class="mr-3">
+                              <v-img
+                                v-if="review.users.avatar"
+                                :src="review.users.avatar"
+                                alt="Reviewer Avatar"
+                              ></v-img>
+                              <v-avatar v-else color="teal-darken-1" size="40">
+                                <v-icon color="white">mdi-account</v-icon>
+                              </v-avatar>
+                            </v-avatar>
+                          </template>
+
+                          <v-list-item-title class="d-flex align-center mb-2">
+                            <span class="font-weight-medium mr-2">
+                              {{ review.users.firstname }} {{ review.users.lastname }}
+                            </span>
+                            <v-rating
+                              :model-value="review.rating"
+                              color="yellow-darken-2"
+                              half-increments
+                              readonly
+                              size="small"
+                              class="mr-2"
+                            ></v-rating>
+                            <v-spacer></v-spacer>
+                            <span class="text-caption text-medium-emphasis">
+                              {{ formatDate(review.created_at) }}
+                            </span>
+                          </v-list-item-title>
+
+                          <v-list-item-subtitle class="text-wrap">
+                            {{ review.review_text }}
+                          </v-list-item-subtitle>
+                        </v-list-item>
+
+                        <v-divider
+                          v-if="index < reviews.length - 1"
+                          :key="`divider-${index}`"
+                        ></v-divider>
+                      </template>
+                    </v-list>
+                  </template>
+
+                  <v-card-text
+                    v-else
+                    class="text-center d-flex flex-column align-center justify-center pa-6"
+                  >
+                    <v-icon color="grey-lighten-1" size="64" class="mb-4">
+                      mdi-comment-text-outline
+                    </v-icon>
+                    <p class="text-h6 text-medium-emphasis">No reviews yet</p>
+                    <p class="text-body-2 text-disabled">Be the first to leave a review</p>
+                  </v-card-text>
+                </v-card>
+              </v-col>
+            </v-row>
+            <v-divider class="my-4"></v-divider>
 
             <v-row class="social-links">
               <v-col cols="12" class="d-flex justify-center">
@@ -447,7 +580,7 @@ onMounted(() => {
 <style scoped>
 .profile-container {
   min-height: 100vh;
-  background-color: #f9f9f9;
+  background-color: #004d40;
   padding-bottom: 80px;
 }
 
@@ -460,7 +593,7 @@ onMounted(() => {
 }
 .background-img {
   object-fit: cover;
-  border-bottom: 5px solid #3f51b5;
+  border-bottom: 5px solid #004d40;
 }
 
 .profile-header {
@@ -516,5 +649,23 @@ onMounted(() => {
 .v-btn {
   text-transform: none;
   font-weight: 500;
+  transition: background-color 0.3s, transform 0.2s; 
 }
+.v-btn:hover {
+  background-color: #4db6ac; 
+  transform: scale(1.05);
+}
+
+.v-btn:active {
+  transform: scale(0.95);
+}
+
+.review-card {
+  border-radius: 8px; 
+}
+
+.review-card .v-list-item:hover {
+  background-color: #f1f1f1; 
+}
+
 </style>
