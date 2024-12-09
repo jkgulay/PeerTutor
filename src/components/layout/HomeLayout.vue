@@ -467,7 +467,7 @@ onMounted(() => {
       >
         <v-row justify="center">
           <v-col class="text-center mt-4" cols="12" style="color: #26a69a">
-            {{ new Date().getFullYear() }} — <strong>Kayel</strong>
+            <strong><p>&copy; 2024 PeerTutor. All Rights Reserved.</p></strong>
           </v-col>
         </v-row>
       </v-footer>

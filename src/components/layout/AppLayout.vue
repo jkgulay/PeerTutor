@@ -34,7 +34,7 @@
       <v-footer style="background: linear-gradient(#072e33, #05161a)" border app class="dflex">
         <v-row justify="center" no-gutters>
           <v-col class="text-center mt-4" cols="12" style="color: #26a69a">
-            {{ new Date().getFullYear() }} — <strong>Kayel</strong>
+           <strong><p>&copy; 2024 PeerTutor. All Rights Reserved.</p></strong>
           </v-col>
         </v-row>
       </v-footer>
