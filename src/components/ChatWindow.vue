@@ -4,7 +4,6 @@
       <h2>{{ selectedContact.name }}</h2>
     </div>
     <div class="chat-body">
-      <!-- Render chat messages dynamically -->
       <div
         v-for="(message, index) in messages"
         :key="index"
@@ -35,10 +34,8 @@ export default {
   methods: {
     sendMessage() {
       if (this.newMessage.trim()) {
-        // Add the user's message
         this.messages.push({ sender: 'user', text: this.newMessage })
 
-        // Add a hardcoded automatic reply
         setTimeout(() => {
           this.messages.push({
             sender: 'contact',
@@ -46,7 +43,7 @@ export default {
           })
         }, 1000)
 
-        this.newMessage = '' // Clear the input field
+        this.newMessage = '' 
       }
     }
   }

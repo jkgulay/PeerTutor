@@ -10,11 +10,30 @@ const newMessage = ref('')
 const selectedContact = ref(null)
 const loadingContacts = ref(true)
 const loadingMessages = ref(false)
-const notification = ref('')
+
 const unreadMessages = ref(0)
 const chatMessagesRef = ref(null)
 const searchVisible = ref(false)
 const searchQuery = ref('')
+
+const notification = ref({
+  message: '',
+  type: '', // 'success', 'error', 'warning'
+  show: false
+})
+
+const showNotification = (message, type = 'info') => {
+  notification.value = {
+    message,
+    type,
+    show: true
+  }
+
+  // Auto-hide notification after 3 seconds
+  setTimeout(() => {
+    notification.value.show = false
+  }, 3000)
+}
 
 const scrollToBottom = async () => {
   await nextTick()
@@ -42,7 +61,6 @@ const senderId = parseInt(localStorage.getItem('sender_id'))
 
 const fetchMessages = async () => {
   if (!selectedContact.value || !senderId) {
-    console.error('No selected contact or sender ID!')
     return
   }
 
@@ -68,39 +86,32 @@ const fetchMessages = async () => {
 
 const sendMessage = async () => {
   if (!selectedContact.value) {
-    console.error('No contact selected!')
-    alert('Please select a contact before sending a message.')
+    showNotification('Please select a contact before sending a message.', 'warning')
     return
   }
 
   if (selectedContact.value && selectedContact.value.id && newMessage.value && senderId) {
-    const recipientId = selectedContact.value.id
-    const { error } = await supabase.from('messages').insert([
-      {
-        sender_id: senderId,
-        recipient_id: recipientId,
-        content: newMessage.value
-      }
-    ])
+    try {
+      const recipientId = selectedContact.value.id
+      const { error } = await supabase.from('messages').insert([
+        {
+          sender_id: senderId,
+          recipient_id: recipientId,
+          content: newMessage.value
+        }
+      ])
 
-    if (error) {
-      console.error('Error sending message:', error)
-      notification.value = 'Error sending message'
-    } else {
-      console.log('Message sent successfully')
-      notification.value = 'Message sent successfully!'
-      setTimeout(() => {
-        notification.value = ''
-      }, 3000)
+      if (error) throw error
+
+      showNotification('Message sent successfully!', 'success')
       newMessage.value = ''
-      fetchMessages()
+      await fetchMessages()
+    } catch (error) {
+      console.error('Error sending message:', error)
+      showNotification('Failed to send message. Please try again.', 'error')
     }
   } else {
-    console.error('Send Message Failed: ', {
-      selectedContact: selectedContact.value,
-      newMessage: newMessage.value,
-      senderId: senderId
-    })
+    showNotification('Unable to send message. Please check your input.', 'warning')
   }
 }
 
@@ -452,14 +463,27 @@ const selectContact = (contact) => {
             </v-sheet>
           </v-col>
         </v-row>
-
-        <v-snackbar v-model="notification" color="success" timeout="3000">
-          {{ notification }}
-          <template #action>
-            <v-btn color="white" @click="notification = ''">Close</v-btn>
-          </template>
-        </v-snackbar>
       </v-container>
+
+      <!-- Notification Component -->
+      <v-snackbar
+        v-model="notification.show"
+        :color="
+          notification.type === 'success'
+            ? 'green'
+            : notification.type === 'error'
+              ? 'red'
+              : notification.type === 'warning'
+                ? 'orange'
+                : 'info'
+        "
+        timeout="3000"
+      >
+        {{ notification.message }}
+        <template v-slot:action="{ attrs }">
+          <v-btn text v-bind="attrs" @click="notification.show = false"> Close </v-btn>
+        </template>
+      </v-snackbar>
     </template>
   </HomeLayout>
 </template>
@@ -493,7 +517,7 @@ const selectContact = (contact) => {
 .chat-card {
   display: flex;
   flex-direction: column;
-  height: 610px;
+  height: 100%;
 }
 
 .chat-header {
