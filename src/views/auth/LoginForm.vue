@@ -5,94 +5,70 @@ import { ref } from 'vue'
 import { requiredValidator, emailValidator } from '@/utils/validators'
 import { useRouter } from 'vue-router'
 
-// Router instance
 const router = useRouter()
-
-// Default form data
-const formDataDefault = {
+const formData = ref({
   email: '',
   password: ''
-}
+})
 
-// Reactive form data and action state
-const formData = ref({ ...formDataDefault })
 const formAction = ref({ ...formActionDefault })
-
-// Password visibility state
 const isPasswordVisible = ref(false)
-
-// Reference to the form
 const refVForm = ref()
 
 const onSubmit = async () => {
-  // Initialize form action state
   formAction.value = { ...formActionDefault }
-
-  // Set form to processing state
   formAction.value.formProcess = true
 
   try {
-    // Sign in the user with email and password
     const { data, error } = await supabase.auth.signInWithPassword({
       email: formData.value.email,
       password: formData.value.password
     })
 
-    // Handle login error
     if (error) {
       formAction.value.formErrorMessage = error.message || 'An error occurred during login.'
-      formAction.value.formStatus = error.status
-      console.error('Login error:', error) // Log the error for debugging
+      console.error('Login error:', error)
       return
     }
 
-    // Assuming 'data' is the response after logging in (e.g., from supabase auth)
     if (data) {
-      try {
-        // Fetch the user data from the 'users' table using the user's ID
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('*')
-          .eq('user_id', data.user.id) // Fetch user by their ID
-          .single() // Assuming you expect only one user result
+      // Fetch user role from the database
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('role')
+        .eq('user_id', data.user.id) // Ensure this matches the correct column name and type
+        .single()
 
-        // If there's an error fetching the user data
-        if (userError) {
-          console.error('Error fetching user from users table:', userError)
-          formAction.value.formErrorMessage = 'Error fetching user data.'
-          return
-        }
+      if (userError) {
+        console.error('Error fetching user role:', userError)
+        formAction.value.formErrorMessage = 'Error fetching user data.'
+        return
+      }
 
-        // Save user ID to local storage
-        localStorage.setItem('user_id', userData.id)
-        console.log(userData.id) // Log the user ID for debugging
+      localStorage.setItem('user_id', userData.id)
+      console.log(userData.id)
 
-        // Set the success message and redirect
-        formAction.value.formSuccessMessage = 'Successfully Logged In!' // Set the success message
-        router.replace('/home') // Redirect to the home page
-      } catch (fetchError) {
-        console.error('Unexpected error during fetch:', fetchError)
-        formAction.value.formErrorMessage = 'Unexpected error during user data fetch.'
+      formAction.value.formSuccessMessage = 'Successfully Logged In!'
+      if (userData.role === 'Admin') {
+        router.push({ name: 'admin' }) 
+      } else {
+        router.push({ name: 'home' }) 
       }
     } else {
-      console.error('User data not available')
+      console.error('User  data not available')
       formAction.value.formErrorMessage = 'No user data returned.'
     }
   } catch (error) {
     console.error('Unexpected error during login:', error)
     formAction.value.formErrorMessage = 'An unexpected error occurred.'
   } finally {
-    // Reset form after processing
     refVForm.value?.reset()
-    // Turn off processing
     formAction.value.formProcess = false
   }
 }
-
-// Form submit handler
 const onFormSubmit = () => {
   refVForm.value?.validate().then(({ valid }) => {
-    if (valid) onSubmit() // Call onSubmit if the form is valid
+    if (valid) onSubmit()
   })
 }
 </script>

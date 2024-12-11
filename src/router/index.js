@@ -5,6 +5,9 @@ import RegisterView from '@/views/auth/RegisterView.vue'
 import HomeView from '@/views/system/HomeView.vue'
 import ProfileView from '@/views/system/ProfileView.vue'
 import ChatView from '@/views/system/ChatView.vue'
+import AdminDashboard from '@/views/system/AdminDashboard.vue'
+import AdminChat from '@/views/system/AdminChat.vue'
+import AdminUsers from '@/views/system/AdminUsers.vue'
 
 const routes = [
   {
@@ -44,80 +47,68 @@ const routes = [
     component: ProfileView,
     meta: { requiresAuth: true }
   },
-
   {
-    path: '/tutor-profile/:userId',
-    name: 'tutor-profile',
-    component: () => import('@/views/system/TutorProfileView.vue'),
-    props: true,
-    meta: { requiresAuth: true }
+    path: '/admin',
+    name: 'admin',
+    component: AdminDashboard,
+    meta: { requiresAuth: true, role: 'Admin' }
+  },
+  {
+    path: '/adminchat',
+    name: 'adminchat',
+    component: AdminChat,
+    meta: { requiresAuth: true, role: 'Admin' }
+  },
+  {
+    path: '/adminuser',
+    name: 'adminuser',
+    component: AdminUsers,
+    meta: { requiresAuth: true, role: 'Admin' }
   }
 ]
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes
-})
+});
 
 router.beforeEach(async (to) => {
-  const isLoggedIn = await isAuthenticated()
-
-  if (to.meta.requiresAuth && !isLoggedIn) {
-    return { name: 'login' }
-  }
-
-  if (isLoggedIn && (to.name === 'login' || to.name === 'register')) {
-    return { name: 'home' }
-  }
-})
-
-router.beforeEach(async (to, from, next) => {
-  const {
-    data: { session }
-  } = await supabase.auth.getSession()
-  const requiresAuth = to.matched.some((record) => record.meta.requiresAuth)
+  const { data: { session } } = await supabase.auth.getSession();
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
 
   if (requiresAuth && !session) {
-    next({ name: 'login' })
-  } else if (!requiresAuth && session) {
-    next({ name: 'home' })
-  } else {
-    next()
+    return { name: 'login' };
   }
-})
 
-router.beforeEach(async (to, from, next) => {
-  const protectedRoutes = ['/home', '/messages', '/profile']
-  
-  if (protectedRoutes.includes(to.path)) {
-    const { data: { user } } = await supabase.auth.getUser()
-    
-    if (!user) {
-      next('/login')
-      return
+  if (session && (to.name === 'login' || to.name === 'register')) {
+    return { name: 'home' };
+  }
+
+  if (to.meta.role) {
+    const { data: { user }, error } = await supabase.auth.getUser ();
+    if (error || !user) {
+      return { name: 'login' }; 
     }
 
-    if (!localStorage.getItem('sender_id') && !localStorage.getItem('user_id')) {
-      try {
-        const { data: userData } = await supabase
-          .from('users')
-          .select('id')
-          .eq('user_id', user.id)
-          .single()
+    const { data: userData, error: roleError } = await supabase
+      .from('users')
+      .select('role')
+      .eq('user_id', user.id)
+      .single();
 
-        if (userData) {
-          localStorage.setItem('sender_id', userData.id.toString())
-        }
-      } catch (error) {
-        console.error('Error fetching user data:', error)
-        next('/login')
-        return
+    if (roleError || !userData) {
+      return { name: 'login' }; 
+    }
+
+    const userRole = userData.role; 
+
+    if (userRole !== to.meta.role) {
+      if (userRole === 'Tutor' || userRole === 'Student') {
+        return { name: 'home' }; 
       }
+      return { name: 'login' }; 
     }
   }
-  
-  next()
-})
-
+});
 
 export default router

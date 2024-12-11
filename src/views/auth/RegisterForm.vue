@@ -55,8 +55,10 @@ const onSubmit = async () => {
       formAction.value.formErrorMessage =
         signupError.message || 'An error occurred. Please try again.'
       formAction.value.formStatus = signupError.status
-    } else if (signupData) {
+      return; // Exit early on error
+    }
 
+    if (signupData) {
       const { error: profileError } = await supabase.from('users').insert([
         {
           user_id: signupData.user.id, 
@@ -77,7 +79,7 @@ const onSubmit = async () => {
         formAction.value.formSuccessMessage = 'Check your email to confirm registration!'
         refVForm.value?.reset() // Reset the form
         setTimeout(() => {
-          router.replace('/') // Redirect to home
+          router.replace('/login') // Redirect to home
         }, 2000)
       }
     }
