@@ -32,11 +32,10 @@ const onSubmit = async () => {
     }
 
     if (data) {
-      // Fetch user role from the database
       const { data: userData, error: userError } = await supabase
         .from('users')
         .select('role')
-        .eq('user_id', data.user.id) // Ensure this matches the correct column name and type
+        .eq('user_id', data.user.id) 
         .single()
 
       if (userError) {

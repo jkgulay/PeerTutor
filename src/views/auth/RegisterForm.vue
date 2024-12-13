@@ -13,7 +13,6 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 
 // Default form data
-// Default form data
 const formDataDefault = {
   firstname: '',
   lastname: '',
@@ -55,7 +54,7 @@ const onSubmit = async () => {
       formAction.value.formErrorMessage =
         signupError.message || 'An error occurred. Please try again.'
       formAction.value.formStatus = signupError.status
-      return; // Exit early on error
+      return; 
     }
 
     if (signupData) {
@@ -77,9 +76,9 @@ const onSubmit = async () => {
       } else {
         console.log('Sign Up successful:', signupData)
         formAction.value.formSuccessMessage = 'Check your email to confirm registration!'
-        refVForm.value?.reset() // Reset the form
+        refVForm.value?.reset() 
         setTimeout(() => {
-          router.replace('/login') // Redirect to home
+          router.replace('/login') 
         }, 2000)
       }
     }
@@ -87,12 +86,10 @@ const onSubmit = async () => {
     console.error('Unexpected error during signup:', err)
     formAction.value.formErrorMessage = 'An unexpected error occurred. Please try again.'
   } finally {
-    // Turn off processing
     formAction.value.formProcess = false
   }
 }
 
-// Function to validate and submit the form
 const onFormSubmit = () => {
   refVForm.value
     ?.validate()
@@ -100,7 +97,6 @@ const onFormSubmit = () => {
       if (valid) {
         onSubmit()
       } else {
-        // Handle validation errors if needed
         formAction.value.formErrorMessage = 'Please fix the validation errors.'
       }
     })
