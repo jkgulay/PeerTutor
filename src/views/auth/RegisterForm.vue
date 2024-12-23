@@ -12,7 +12,6 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
-// Default form data
 const formDataDefault = {
   firstname: '',
   lastname: '',

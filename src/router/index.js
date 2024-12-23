@@ -8,6 +8,7 @@ import ChatView from '@/views/system/ChatView.vue'
 import AdminDashboard from '@/views/system/AdminDashboard.vue'
 import AdminChat from '@/views/system/AdminChat.vue'
 import AdminUsers from '@/views/system/AdminUsers.vue'
+import TutorProfile from '@/views/system/TutorProfileView.vue'
 
 const routes = [
   {
@@ -64,51 +65,61 @@ const routes = [
     name: 'adminuser',
     component: AdminUsers,
     meta: { requiresAuth: true, role: 'Admin' }
+  },
+  {
+    path: '/tutor-profile/:userId',
+    name: 'tutor-profile',
+    component: TutorProfile
   }
 ]
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes
-});
+})
 
 router.beforeEach(async (to) => {
-  const { data: { session } } = await supabase.auth.getSession();
-  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+  const {
+    data: { session }
+  } = await supabase.auth.getSession()
+  const requiresAuth = to.matched.some((record) => record.meta.requiresAuth)
 
   if (requiresAuth && !session) {
-    return { name: 'login' };
+    return { name: 'login' }
   }
 
   if (session && (to.name === 'login' || to.name === 'register')) {
-    return { name: 'home' };
+    return { name: 'home' }
   }
 
   if (to.meta.role) {
-    const { data: { user }, error } = await supabase.auth.getUser ();
+    const {
+      data: { user },
+      error
+    } = await supabase.auth.getUser()
     if (error || !user) {
-      return { name: 'login' }; 
+      return { name: 'login' }
     }
 
     const { data: userData, error: roleError } = await supabase
       .from('users')
       .select('role')
       .eq('user_id', user.id)
-      .single();
+      .single()
 
     if (roleError || !userData) {
-      return { name: 'login' }; 
+      return { name: 'login' }
     }
 
-    const userRole = userData.role; 
+    const userRole = userData.role
 
     if (userRole !== to.meta.role) {
       if (userRole === 'Tutor' || userRole === 'Student') {
-        return { name: 'home' }; 
+        return { name: 'home' }
       }
-      return { name: 'login' }; 
+      return { name: 'login' }
     }
   }
-});
+})
 
 export default router
