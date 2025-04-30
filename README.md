@@ -1,39 +1,43 @@
-# PeerTutor
+# 📚 PeerTutor
 
-PeerTutor is an innovative platform designed to connect students with skilled tutors in their academic fields. Whether you need help mastering a challenging topic or sharpening your skills, PeerTutor offers a seamless way to find the right guidance.
+**PeerTutor** is a web-based platform designed to connect students with peer tutors for academic support. Built using **Vue.js** and **Vuetify** for a responsive and user-friendly interface, and powered by **Supabase** as the backend/database service, PeerTutor simplifies session booking, tutor management, and feedback collection.
 
-With features like personalized tutor profiles, real-time ratings, and student reviews, PeerTutor ensures transparency and trust in every interaction. Our goal is to foster collaborative learning environments where students and tutors can thrive together, achieving academic excellence.
+## 🚀 Features
 
-PeerTutor isn't just about tutoring—it's about building a supportive community that empowers learners to reach their full potential.
+- 🔍 **Browse Tutors** – Students can view tutor profiles, availability, and subjects offered.  
+- 📅 **Book Sessions** – Easy-to-use booking interface to schedule one-on-one sessions.  
+- 🌟 **Rate & Review** – Students can leave feedback after sessions to help others choose quality tutors.  
+- 👨‍🏫 **Tutor Management** – Tutors can manage their profiles and set availability.  
+- 🛠 **Admin/Backend** – Data is handled securely via Supabase (PostgreSQL-based).
 
-## Recommended IDE Setup
+## 🛠 Tech Stack
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+- **Frontend:** Vue.js + Vuetify  
+- **Backend:** Supabase (auth, database, API)  
+- **Database Tables:** `Tutors`, `Bookings`, `Reviews`, `Users`
 
-## Customize configuration
+## 📂 Project Structure
+/src
+  /components
+  /views
+  /services
+  App.vue
+  main.js
 
-See [Vite Configuration Reference](https://vitejs.dev/config/).
+## 🔐 Authentication
 
-## Project Setup
+Supabase handles user authentication for both students and tutors, ensuring secure login and session management.
 
-```sh
+## 🧪 Future Improvements
+
+- Real-time chat or messaging between students and tutors  
+- Notification system for upcoming bookings  
+- Advanced search and filter for tutor listings
+
+## 📎 Getting Started
+
+# Install dependencies
 npm install
-```
 
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-### Compile and Minify for Production
-
-```sh
-npm run build
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
-```
+# Run the app locally
+npm run serve
